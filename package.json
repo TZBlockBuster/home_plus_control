@@ -1,0 +1,33 @@
+{
+  "displayName": "Home + Control",
+  "name": "homebridge-home_plus_control",
+  "version": "1.0.1",
+  "description": "Home+ Control is an Apple Home integration that allows you to control your Home + Control devices.",
+  "main": "dist/home_plus_control.js",
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "build": "rimraf ./dist && tsc",
+    "prepublishOnly": "npm run build",
+    "postpublish": "npm run clean",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "publish": "npm publish --access public",
+    "login": "npm login --registry=https://registry.npmjs.org/"
+  },
+  "keywords": [
+    "homebridge-plugin",
+    "home + control"
+  ],
+  "author": "TZBlockBuster <tzblockbuster@gmail.com>",
+  "engines": {
+    "homebridge": ">=1.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/node": "^18.11.17",
+    "typescript": "^4.9.4",
+    "rimraf": "^3.0.2",
+    "homebridge": "^1.6.0"
+  }
+}
