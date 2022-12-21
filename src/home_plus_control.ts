@@ -51,6 +51,7 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
             }
         }).then(response => response.json())
             .then(data => {
+                this.log.info("Got data: " + JSON.stringify(data));
                 data["body"]["home"]["modules"].forEach((module: any) => {
                     if (module["type"] === "BNIL") {
                         HomePlusControlPlatform.LightSwitchState[module["id"]] = module["on"];
