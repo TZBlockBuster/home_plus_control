@@ -19,7 +19,8 @@ class LightSwitch {
         });
         this.informationService = new hap.Service.AccessoryInformation()
             .setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios")
-            .setCharacteristic(hap.Characteristic.Model, "Some BTcino Model");
+            .setCharacteristic(hap.Characteristic.Model, "Some BTcino Model")
+            .setCharacteristic(hap.Characteristic.SerialNumber, id);
         log.info("Light switch '%s' created!", name);
     }
     /*
