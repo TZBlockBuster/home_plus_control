@@ -1,10 +1,20 @@
 "use strict";
 const LightSwitch_1 = require("./LightSwitch");
+const netatmo_1 = require("netatmo");
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
 let hap;
 class HomePlusControlPlatform {
     constructor(log, config, api) {
+        this.auth = {
+            "client_id": "",
+            "client_secret": "",
+            "username": "",
+            "password": ""
+        };
+        this.getHomeData = function (err, data) {
+            console.log(data);
+        };
         this.home_id = "";
         this.token = "";
         this.log = log;
@@ -12,6 +22,12 @@ class HomePlusControlPlatform {
         log.info("Home + Control Platform Plugin Loading...");
         this.home_id = config["home_id"];
         this.token = config["token"];
+        this.auth["client_id"] = config["client_id"];
+        this.auth["client_secret"] = config["client_secret"];
+        this.auth["username"] = config["username"];
+        this.auth["password"] = config["password"];
+        this.api = new netatmo_1.Netatmo(this.auth);
+        this.api.on('get-homedata', this.getHomeData);
         // get json using a http request
         this.loadAccessories();
         log.info("Example platform finished initializing!");
@@ -40,31 +56,6 @@ class HomePlusControlPlatform {
         });
     }
     loadAccessories() {
-        fetch('https://api.netatmo.com/api/homesdata', {
-            method: 'GET',
-            headers: {
-                'accept': 'application/json',
-                'Authorization': 'Bearer ' + this.token
-            }
-        }).then(response => response.json())
-            .then(data => {
-            this.log.info("Got data: " + JSON.stringify(data));
-            if (data["error"] != null) {
-                this.log.error("Error: " + data["error"]["message"]);
-            }
-            else {
-                data["body"]["homes"].forEach((home) => {
-                    if (home["id"] === this.home_id) {
-                        home["modules"].forEach((module) => {
-                            if (module["type"] === "BNLD") {
-                                HomePlusControlPlatform.Accessories.push(module["id"]);
-                                HomePlusControlPlatform.AccessoryName[module["id"]] = module["name"];
-                            }
-                        });
-                    }
-                });
-            }
-        });
     }
     accessories(callback) {
         var foundAccessories = [];

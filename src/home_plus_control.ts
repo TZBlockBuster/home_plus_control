@@ -1,6 +1,7 @@
 import {AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin,} from "homebridge";
 import {LightSwitch} from "./LightSwitch";
 import {DimmableLightSwitch} from "./DimmableLightSwitch";
+import {Netatmo} from "netatmo";
 
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
@@ -15,13 +16,26 @@ export = (api: API) => {
 
 class HomePlusControlPlatform implements StaticPlatformPlugin {
 
+    private auth = {
+        "client_id": "",
+        "client_secret": "",
+        "username": "",
+        "password": ""
+    }
+
+    private api;
+
+    getHomeData = function (err, data) {
+        console.log(data);
+    };
+
+
     private readonly log: Logging;
 
     public static Accessory = {
         "a24a7f-2b10-f0592c453f2c": "Bett Rechts",
         "a24a7f-2c10-f0592c432712": "Bett Links"
     }
-
 
 
     public static Accessories: string[] = []
@@ -43,6 +57,15 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
 
         this.home_id = config["home_id"];
         this.token = config["token"];
+
+        this.auth["client_id"] = config["client_id"];
+        this.auth["client_secret"] = config["client_secret"];
+        this.auth["username"] = config["username"];
+        this.auth["password"] = config["password"];
+
+        this.api = new Netatmo(this.auth);
+
+        this.api.on('get-homedata', this.getHomeData);
 
         // get json using a http request
         this.loadAccessories();
@@ -74,30 +97,7 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
     }
 
     loadAccessories(): void {
-        fetch('https://api.netatmo.com/api/homesdata', {
-            method: 'GET',
-            headers: {
-                'accept': 'application/json',
-                'Authorization': 'Bearer ' + this.token
-            }
-        }).then(response => response.json())
-            .then(data => {
-                this.log.info("Got data: " + JSON.stringify(data));
-                if (data["error"] != null) {
-                    this.log.error("Error: " + data["error"]["message"]);
-                } else {
-                    data["body"]["homes"].forEach((home: any) => {
-                        if (home["id"] === this.home_id) {
-                            home["modules"].forEach((module: any) => {
-                                if (module["type"] === "BNLD") {
-                                    HomePlusControlPlatform.Accessories.push(module["id"])
-                                    HomePlusControlPlatform.AccessoryName[module["id"]] = module["name"]
-                                }
-                            });
-                        }
-                    });
-                }
-            });
+
     }
 
     accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
