@@ -82,6 +82,7 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
             }
         }).then(response => response.json())
             .then(data => {
+                this.log.info("Got data: " + JSON.stringify(data));
                 if (data["error"] != null) {
                     this.log.error("Error: " + data["error"]["message"]);
                 } else {
