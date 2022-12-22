@@ -25,7 +25,7 @@ export class DimmableLightSwitch implements AccessoryPlugin {
         this.log = log;
         this.name = name;
 
-        this.switchService = new hap.Service.Switch(name);
+        this.switchService = new hap.Service.Lightbulb(name);
 
         this.switchService.getCharacteristic(hap.Characteristic.On)
             .onGet(() => {
