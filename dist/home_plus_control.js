@@ -21,7 +21,7 @@ class HomePlusControlPlatform {
         fetch('https://api.netatmo.com/api/homestatus?home_id=' + this.home_id, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json',
+                'accept': 'application/json',
                 'Authorization': 'Bearer ' + this.token
             }
         }).then(response => response.json())
