@@ -1,5 +1,6 @@
 import {AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin,} from "homebridge";
 import {LightSwitch} from "./LightSwitch";
+import {DimmableLightSwitch} from "./DimmableLightSwitch";
 
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
@@ -68,6 +69,7 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
     callback([
       new LightSwitch(hap, this.log, "Bett Rechts", "a24a7f-2b10-f0592c453f2c"),
       new LightSwitch(hap, this.log, "Bett Links", "a24a7f-2c10-f0592c432712"),
+      new DimmableLightSwitch(hap, this.log, "Wand", "a24a7f-0c10-f0592c1a45ba")
     ]);
   }
 }

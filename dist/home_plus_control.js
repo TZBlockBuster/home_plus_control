@@ -1,5 +1,6 @@
 "use strict";
 const LightSwitch_1 = require("./LightSwitch");
+const DimmableLightSwitch_1 = require("./DimmableLightSwitch");
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
 let hap;
@@ -42,6 +43,7 @@ class HomePlusControlPlatform {
         callback([
             new LightSwitch_1.LightSwitch(hap, this.log, "Bett Rechts", "a24a7f-2b10-f0592c453f2c"),
             new LightSwitch_1.LightSwitch(hap, this.log, "Bett Links", "a24a7f-2c10-f0592c432712"),
+            new DimmableLightSwitch_1.DimmableLightSwitch(hap, this.log, "Wand", "a24a7f-0c10-f0592c1a45ba")
         ]);
     }
 }
