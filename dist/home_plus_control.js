@@ -48,8 +48,9 @@ class HomePlusControlPlatform {
             }
         }).then(response => {
             this.log.info("Got response using token " + this.token);
-            this.log.info("Got response: " + response.text());
-            return response.json();
+            const json = response.json();
+            this.log.info("Got json: " + JSON.stringify(json));
+            return json;
         })
             .then(data => {
             if (data["error"] != null) {
