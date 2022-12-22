@@ -16,19 +16,6 @@ export = (api: API) => {
 
 class HomePlusControlPlatform implements StaticPlatformPlugin {
 
-    private auth = {
-        "client_id": "",
-        "client_secret": "",
-        "username": "",
-        "password": ""
-    }
-
-    private api;
-
-    getHomeData = function (err, data) {
-        console.log(data);
-    };
-
 
     private readonly log: Logging;
 
@@ -57,15 +44,6 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
 
         this.home_id = config["home_id"];
         this.token = config["token"];
-
-        this.auth["client_id"] = config["client_id"];
-        this.auth["client_secret"] = config["client_secret"];
-        this.auth["username"] = config["username"];
-        this.auth["password"] = config["password"];
-
-        this.api = new Netatmo(this.auth);
-
-        this.api.on('get-homedata', this.getHomeData);
 
         // get json using a http request
         this.loadAccessories();
@@ -97,7 +75,30 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
     }
 
     loadAccessories(): void {
-
+        fetch('https://api.netatmo.com/api/homesdata?home_id=' + this.home_id, {
+            method: 'GET',
+            headers: {
+                'accept': 'application/json',
+                'Authorization': 'Bearer ' + this.token
+            }
+        }).then(response => {
+            this.log.info("Got response: " + response);
+            return response.json()
+        })
+            .then(data => {
+                if (data["error"] != null) {
+                    this.log.error("Error: " + data["error"]["message"]);
+                } else {
+                    data["body"]["homes"].forEach((home: any) => {
+                        home["modules"].forEach((module: any) => {
+                            if (module["type"] === "BNLD") {
+                                HomePlusControlPlatform.Accessories.push(module["id"])
+                                HomePlusControlPlatform.AccessoryName[module["id"]] = module["name"]
+                            }
+                        });
+                    });
+                }
+            });
     }
 
     accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
