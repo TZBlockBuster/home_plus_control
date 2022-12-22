@@ -75,7 +75,7 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
     }
 
     loadAccessories(): void {
-        fetch('https://api.netatmo.com/api/homesdata?home_id=' + this.home_id, {
+        fetch('https://api.netatmo.com/api/homesdata', {
             method: 'GET',
             headers: {
                 'accept': 'application/json',
@@ -90,7 +90,7 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
             .then(data => {
                 if (data["error"] != null) {
                     this.log.error("Error: " + data["error"]["message"]);
-                } else {
+                } else if(data["body"]["homes"] != null) {
                     data["body"]["homes"].forEach((home: any) => {
                         home["modules"].forEach((module: any) => {
                             if (module["type"] === "BNLD") {
@@ -99,6 +99,8 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
                             }
                         });
                     });
+                } else {
+                    this.log.error("Error: No homes found");
                 }
             });
     }

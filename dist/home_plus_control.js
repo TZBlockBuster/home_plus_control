@@ -40,7 +40,7 @@ class HomePlusControlPlatform {
         });
     }
     loadAccessories() {
-        fetch('https://api.netatmo.com/api/homesdata?home_id=' + this.home_id, {
+        fetch('https://api.netatmo.com/api/homesdata', {
             method: 'GET',
             headers: {
                 'accept': 'application/json',
@@ -56,7 +56,7 @@ class HomePlusControlPlatform {
             if (data["error"] != null) {
                 this.log.error("Error: " + data["error"]["message"]);
             }
-            else {
+            else if (data["body"]["homes"] != null) {
                 data["body"]["homes"].forEach((home) => {
                     home["modules"].forEach((module) => {
                         if (module["type"] === "BNLD") {
@@ -65,6 +65,9 @@ class HomePlusControlPlatform {
                         }
                     });
                 });
+            }
+            else {
+                this.log.error("Error: No homes found");
             }
         });
     }
