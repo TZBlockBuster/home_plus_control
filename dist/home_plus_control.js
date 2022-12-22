@@ -18,7 +18,7 @@ class HomePlusControlPlatform {
         log.info("Example platform finished initializing!");
     }
     reloadAccessories() {
-        fetch('https://api.netatmo.com/api/homestatus?home_id=' + this.home_id, {
+        fetch('https://api.netatmo.com/api/homestatus?home_id=' + this.home_id + "&device_types=BNLD", {
             method: 'GET',
             headers: {
                 'accept': 'application/json',
