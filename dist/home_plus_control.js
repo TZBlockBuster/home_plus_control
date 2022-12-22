@@ -47,7 +47,8 @@ class HomePlusControlPlatform {
                 'Authorization': 'Bearer ' + this.token
             }
         }).then(response => {
-            this.log.info("Got response: " + response);
+            this.log.info("Got response using token " + this.token);
+            this.log.info("Got response: " + response.text());
             return response.json();
         })
             .then(data => {
