@@ -46,13 +46,10 @@ class HomePlusControlPlatform {
                 'accept': 'application/json',
                 'Authorization': 'Bearer ' + this.token
             }
-        }).then(response => {
-            this.log.info("Got response using token " + this.token);
-            const json = response.json();
-            this.log.info("Got json: " + JSON.stringify(json));
-            return json;
         })
+            .then(response => response.json())
             .then(data => {
+            this.log.info("Got data: " + JSON.stringify(data));
             if (data["error"] != null) {
                 this.log.error("Error: " + data["error"]["message"]);
             }
