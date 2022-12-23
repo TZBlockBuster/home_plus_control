@@ -14,6 +14,10 @@ export class LightSwitch implements AccessoryPlugin {
   private readonly log: Logging;
 
   private switchOn = false;
+    private id: string = "";
+    private home_id: string = "";
+    private bridge: string = "";
+    private token: string = "";
 
   // This property must be existent!!
   name: string;
@@ -21,21 +25,26 @@ export class LightSwitch implements AccessoryPlugin {
   private readonly switchService: Service;
   private readonly informationService: Service;
 
-  constructor(hap: HAP, log: Logging, name: string, id: string) {
+  constructor(hap: HAP, log: Logging, name: string, id: string, home_id: string, bridge: string, token: string) {
     this.log = log;
     this.name = name;
+    this.id = id;
+    this.home_id = home_id;
+    this.bridge = bridge;
+    this.token = token;
+
 
     this.switchService = new hap.Service.Switch(name);
     this.switchService.getCharacteristic(hap.Characteristic.On)
-      .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
-        log.info("Current state of the switch was returned: " + (this.switchOn? "ON": "OFF"));
-        callback(undefined, this.switchOn);
-      })
-      .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-        this.switchOn = value as boolean;
-        log.info("Switch state was set to: " + (this.switchOn? "ON": "OFF"));
-        callback();
-      });
+        .onGet(() => {
+            this.log.info("Current state of the switch was returned: " + (this.switchOn ? "ON" : "OFF"));
+            return this.switchOn;
+        })
+        .onSet((value: CharacteristicValue) => {
+            this.switchOn = value as boolean;
+            this.log.info("Switch state was set to: " + (this.switchOn ? "ON" : "OFF"));
+            this.setState(this.switchOn);
+        });
 
     this.informationService = new hap.Service.AccessoryInformation()
       .setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios")
@@ -52,6 +61,32 @@ export class LightSwitch implements AccessoryPlugin {
   identify(): void {
     this.log("Identify!");
   }
+
+  setState(state: boolean) {
+        fetch('https://api.netatmo.com/api/setstate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.token
+            },
+            body: JSON.stringify({
+                "home": {
+                    "id": this.home_id,
+                    "modules": [
+                        {
+                            "id": this.id,
+                            "on": state,
+                            "bridge": this.bridge
+                        }
+                    ]
+                }
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            });
+    }
 
   /*
    * This method is called directly after creation of this instance.

@@ -2,20 +2,28 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LightSwitch = void 0;
 class LightSwitch {
-    constructor(hap, log, name, id) {
+    constructor(hap, log, name, id, home_id, bridge, token) {
         this.switchOn = false;
+        this.id = "";
+        this.home_id = "";
+        this.bridge = "";
+        this.token = "";
         this.log = log;
         this.name = name;
+        this.id = id;
+        this.home_id = home_id;
+        this.bridge = bridge;
+        this.token = token;
         this.switchService = new hap.Service.Switch(name);
         this.switchService.getCharacteristic(hap.Characteristic.On)
-            .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
-            log.info("Current state of the switch was returned: " + (this.switchOn ? "ON" : "OFF"));
-            callback(undefined, this.switchOn);
+            .onGet(() => {
+            this.log.info("Current state of the switch was returned: " + (this.switchOn ? "ON" : "OFF"));
+            return this.switchOn;
         })
-            .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
+            .onSet((value) => {
             this.switchOn = value;
-            log.info("Switch state was set to: " + (this.switchOn ? "ON" : "OFF"));
-            callback();
+            this.log.info("Switch state was set to: " + (this.switchOn ? "ON" : "OFF"));
+            this.setState(this.switchOn);
         });
         this.informationService = new hap.Service.AccessoryInformation()
             .setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios")
@@ -29,6 +37,31 @@ class LightSwitch {
      */
     identify() {
         this.log("Identify!");
+    }
+    setState(state) {
+        fetch('https://api.netatmo.com/api/setstate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.token
+            },
+            body: JSON.stringify({
+                "home": {
+                    "id": this.home_id,
+                    "modules": [
+                        {
+                            "id": this.id,
+                            "on": state,
+                            "bridge": this.bridge
+                        }
+                    ]
+                }
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+            console.log('Success:', data);
+        });
     }
     /*
      * This method is called directly after creation of this instance.

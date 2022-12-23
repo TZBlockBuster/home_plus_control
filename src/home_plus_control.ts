@@ -112,8 +112,8 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
         }
         callback(foundAccessories);*/
         callback([
-            new LightSwitch(hap, this.log, "Bett Rechts", "a24a7f-2b10-f0592c453f2c"),
-            new LightSwitch(hap, this.log, "Bett Links", "a24a7f-2c10-f0592c432712"),
+            new LightSwitch(hap, this.log, "Bett Rechts", "a24a7f-2b10-f0592c453f2c", this.home_id, "00:03:50:a2:4a:7f", this.token),
+            new LightSwitch(hap, this.log, "Bett Links", "a24a7f-2c10-f0592c432712", this.home_id, "00:03:50:a2:4a:7f", this.token),
             new DimmableLightSwitch(hap, this.log, "Wand", "a24a7f-0c10-f0592c1a45ba", this.home_id, "00:03:50:a2:4a:7f", this.token)
         ]);
     }
