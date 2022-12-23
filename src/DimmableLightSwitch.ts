@@ -33,7 +33,7 @@ export class DimmableLightSwitch implements AccessoryPlugin {
 
         this.switchService = new hap.Service.Lightbulb(name);
 
-        this.switchService.getCharacteristic(hap.Characteristic.On)
+        /*this.switchService.getCharacteristic(hap.Characteristic.On)
             .onGet(() => {
                 this.log.info("Current state of the switch was returned: " + (this.switchBrightness > 0 ? "ON" : "OFF"));
                 return this.switchBrightness > 0;
@@ -41,7 +41,7 @@ export class DimmableLightSwitch implements AccessoryPlugin {
             .onSet((value: CharacteristicValue) => {
                 this.switchBrightness = value as number;
                 this.log.info("Switch state was set to: " + (this.switchBrightness > 0 ? "ON" : "OFF"));
-            });
+            });*/
 
         this.switchService.getCharacteristic(hap.Characteristic.Brightness)
             .onGet(() => {
