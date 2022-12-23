@@ -1,5 +1,6 @@
 "use strict";
 const LightSwitch_1 = require("./LightSwitch");
+const DimmableLightSwitch_1 = require("./DimmableLightSwitch");
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
 let hap;
@@ -13,7 +14,6 @@ class HomePlusControlPlatform {
         this.home_id = config["home_id"];
         this.token = config["token"];
         // get json using a http request
-        this.loadAccessories();
         log.info("Example platform finished initializing!");
     }
     reloadAccessories() {
@@ -55,12 +55,17 @@ class HomePlusControlPlatform {
             }
             else if (data["body"]["homes"] != null) {
                 data["body"]["homes"].forEach((home) => {
-                    home["modules"].forEach((module) => {
-                        if (module["type"] === "BNLD") {
-                            HomePlusControlPlatform.Accessories.push(module["id"]);
-                            HomePlusControlPlatform.AccessoryName[module["id"]] = module["name"];
-                        }
-                    });
+                    if (home["modules"] != null) {
+                        home["modules"].forEach((module) => {
+                            if (module["type"] === "BNLD") {
+                                HomePlusControlPlatform.Accessories.push(module["id"]);
+                                HomePlusControlPlatform.AccessoryName[module["id"]] = module["name"];
+                            }
+                        });
+                    }
+                    else {
+                        this.log.error("No modules found for home " + home["name"]);
+                    }
                 });
             }
             else {
@@ -70,16 +75,16 @@ class HomePlusControlPlatform {
     }
     accessories(callback) {
         var foundAccessories = [];
-        for (const id of HomePlusControlPlatform.Accessories) {
+        /*for (const id of HomePlusControlPlatform.Accessories) {
             this.log.info("Adding accessory with id " + id);
-            foundAccessories.push(new LightSwitch_1.LightSwitch(hap, this.log, HomePlusControlPlatform.AccessoryName[id], id));
+            foundAccessories.push(new LightSwitch(hap, this.log, HomePlusControlPlatform.AccessoryName[id], id));
         }
-        callback(foundAccessories);
-        /*callback([
-            new LightSwitch(hap, this.log, "Bett Rechts", "a24a7f-2b10-f0592c453f2c"),
-            new LightSwitch(hap, this.log, "Bett Links", "a24a7f-2c10-f0592c432712"),
-            new DimmableLightSwitch(hap, this.log, "Wand", "a24a7f-0c10-f0592c1a45ba")
-        ]);*/
+        callback(foundAccessories);*/
+        callback([
+            new LightSwitch_1.LightSwitch(hap, this.log, "Bett Rechts", "a24a7f-2b10-f0592c453f2c"),
+            new LightSwitch_1.LightSwitch(hap, this.log, "Bett Links", "a24a7f-2c10-f0592c432712"),
+            new DimmableLightSwitch_1.DimmableLightSwitch(hap, this.log, "Wand", "a24a7f-0c10-f0592c1a45ba", this.home_id, "00:03:50:a2:4a:7f")
+        ]);
     }
 }
 HomePlusControlPlatform.Accessory = {

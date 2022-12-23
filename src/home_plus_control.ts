@@ -1,7 +1,6 @@
 import {AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin,} from "homebridge";
 import {LightSwitch} from "./LightSwitch";
 import {DimmableLightSwitch} from "./DimmableLightSwitch";
-import {Netatmo} from "netatmo";
 
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
@@ -46,7 +45,6 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
         this.token = config["token"];
 
         // get json using a http request
-        this.loadAccessories();
 
         log.info("Example platform finished initializing!");
     }
@@ -87,14 +85,18 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
                 this.log.info("Got data: " + JSON.stringify(data));
                 if (data["error"] != null) {
                     this.log.error("Error: " + data["error"]["message"]);
-                } else if(data["body"]["homes"] != null) {
+                } else if (data["body"]["homes"] != null) {
                     data["body"]["homes"].forEach((home: any) => {
-                        home["modules"].forEach((module: any) => {
-                            if (module["type"] === "BNLD") {
-                                HomePlusControlPlatform.Accessories.push(module["id"])
-                                HomePlusControlPlatform.AccessoryName[module["id"]] = module["name"]
-                            }
-                        });
+                        if (home["modules"] != null) {
+                            home["modules"].forEach((module: any) => {
+                                if (module["type"] === "BNLD") {
+                                    HomePlusControlPlatform.Accessories.push(module["id"])
+                                    HomePlusControlPlatform.AccessoryName[module["id"]] = module["name"]
+                                }
+                            });
+                        } else {
+                            this.log.error("No modules found for home " + home["name"])
+                        }
                     });
                 } else {
                     this.log.error("Error: No homes found");
@@ -104,15 +106,15 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
 
     accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
         var foundAccessories: AccessoryPlugin[] = [];
-        for (const id of HomePlusControlPlatform.Accessories) {
+        /*for (const id of HomePlusControlPlatform.Accessories) {
             this.log.info("Adding accessory with id " + id);
             foundAccessories.push(new LightSwitch(hap, this.log, HomePlusControlPlatform.AccessoryName[id], id));
         }
-        callback(foundAccessories);
-        /*callback([
+        callback(foundAccessories);*/
+        callback([
             new LightSwitch(hap, this.log, "Bett Rechts", "a24a7f-2b10-f0592c453f2c"),
             new LightSwitch(hap, this.log, "Bett Links", "a24a7f-2c10-f0592c432712"),
-            new DimmableLightSwitch(hap, this.log, "Wand", "a24a7f-0c10-f0592c1a45ba")
-        ]);*/
+            new DimmableLightSwitch(hap, this.log, "Wand", "a24a7f-0c10-f0592c1a45ba", this.home_id, "00:03:50:a2:4a:7f")
+        ]);
     }
 }

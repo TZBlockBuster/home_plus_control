@@ -14,6 +14,9 @@ export class DimmableLightSwitch implements AccessoryPlugin {
     private readonly log: Logging;
 
     private switchBrightness = 0;
+    private id: string = "";
+    private home_id: string = "";
+    private bridge: string = "";
 
     // This property must be existent!!
     name: string;
@@ -21,9 +24,12 @@ export class DimmableLightSwitch implements AccessoryPlugin {
     private readonly switchService: Service;
     private readonly informationService: Service;
 
-    constructor(hap: HAP, log: Logging, name: string, id: string) {
+    constructor(hap: HAP, log: Logging, name: string, id: string, home_id: string, bridge: string) {
         this.log = log;
         this.name = name;
+        this.id = id;
+        this.home_id = home_id;
+        this.bridge = bridge;
 
         this.switchService = new hap.Service.Lightbulb(name);
 
@@ -44,6 +50,7 @@ export class DimmableLightSwitch implements AccessoryPlugin {
             .onSet((value: CharacteristicValue) => {
                 this.switchBrightness = value as number;
                 log.info("Switch brightness was set to: " + this.switchBrightness);
+                this.setBrightness(this.switchBrightness);
             });
 
         this.informationService = new hap.Service.AccessoryInformation()
@@ -60,6 +67,27 @@ export class DimmableLightSwitch implements AccessoryPlugin {
      */
     identify(): void {
         this.log("Identify!");
+    }
+
+    setBrightness(brightness: number) {
+        fetch('https://api.netatmo.com/api/setstate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "home": {
+                    "id": this.home_id,
+                    "modules": [
+                        {
+                            "id": this.id,
+                            "brightness": brightness,
+                            "bridge": this.bridge
+                        }
+                    ]
+                }
+            })
+        })
     }
 
     /*
