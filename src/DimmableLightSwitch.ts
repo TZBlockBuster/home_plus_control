@@ -17,6 +17,7 @@ export class DimmableLightSwitch implements AccessoryPlugin {
     private id: string = "";
     private home_id: string = "";
     private bridge: string = "";
+    private token: string = "";
 
     // This property must be existent!!
     name: string;
@@ -24,12 +25,13 @@ export class DimmableLightSwitch implements AccessoryPlugin {
     private readonly switchService: Service;
     private readonly informationService: Service;
 
-    constructor(hap: HAP, log: Logging, name: string, id: string, home_id: string, bridge: string) {
+    constructor(hap: HAP, log: Logging, name: string, id: string, home_id: string, bridge: string, token: string) {
         this.log = log;
         this.name = name;
         this.id = id;
         this.home_id = home_id;
         this.bridge = bridge;
+        this.token = token;
 
         this.switchService = new hap.Service.Lightbulb(name);
 
@@ -73,7 +75,8 @@ export class DimmableLightSwitch implements AccessoryPlugin {
         fetch('https://api.netatmo.com/api/setstate', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.token
             },
             body: JSON.stringify({
                 "home": {

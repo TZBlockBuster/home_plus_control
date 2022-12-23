@@ -83,7 +83,7 @@ class HomePlusControlPlatform {
         callback([
             new LightSwitch_1.LightSwitch(hap, this.log, "Bett Rechts", "a24a7f-2b10-f0592c453f2c"),
             new LightSwitch_1.LightSwitch(hap, this.log, "Bett Links", "a24a7f-2c10-f0592c432712"),
-            new DimmableLightSwitch_1.DimmableLightSwitch(hap, this.log, "Wand", "a24a7f-0c10-f0592c1a45ba", this.home_id, "00:03:50:a2:4a:7f")
+            new DimmableLightSwitch_1.DimmableLightSwitch(hap, this.log, "Wand", "a24a7f-0c10-f0592c1a45ba", this.home_id, "00:03:50:a2:4a:7f", this.token)
         ]);
     }
 }
