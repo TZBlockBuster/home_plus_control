@@ -88,6 +88,10 @@ export class DimmableLightSwitch implements AccessoryPlugin {
                 }
             })
         })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            });
     }
 
     /*
