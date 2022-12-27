@@ -16,6 +16,7 @@ class HomePlusControlPlatform {
         for (const id in HomePlusControlPlatform.Accessory) {
             HomePlusControlPlatform.Accessories.push(id);
         }
+        log.info("Accessories: " + HomePlusControlPlatform.Accessory);
         this.loadAccessories();
         // get json using a http request
         log.info("Example platform finished initializing!");
@@ -23,7 +24,7 @@ class HomePlusControlPlatform {
     loadAccessories() {
         this.log.info("Loading accessories...");
         this.loadAsyncAccessories().then(() => {
-            this.log.info("Loaded accessories: " + HomePlusControlPlatform.Accessories);
+            this.log.info("Loaded Data: " + DimmableLightSwitch_1.DimmableLightSwitch.LightBrightnessState);
         });
     }
     async loadAsyncAccessories() {
