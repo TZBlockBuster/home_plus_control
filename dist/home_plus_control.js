@@ -75,7 +75,7 @@ class HomePlusControlPlatform {
             this.setState(HomePlusControlPlatform.IDToIDLookup[accessory.UUID], value).then(r => {
                 this.log.info("Set state of " + accessory.displayName + " to " + value);
             });
-            callback(undefined);
+            callback();
         });
         this.homeAccessories.push(accessory);
     }

@@ -1,7 +1,7 @@
 {
   "displayName": "Home + Control",
   "name": "homebridge-home_plus_control",
-  "version": "1.0.31",
+  "version": "1.0.32",
   "description": "Home+ Control is an Apple Home integration that allows you to control your Home + Control devices.",
   "main": "dist/home_plus_control.js",
   "scripts": {

@@ -113,7 +113,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
             this.setState(HomePlusControlPlatform.IDToIDLookup[accessory.UUID], value as boolean).then(r => {
                 this.log.info("Set state of " + accessory.displayName + " to " + value);
             });
-            callback(undefined);
+            callback();
         });
 
         this.homeAccessories.push(accessory);
