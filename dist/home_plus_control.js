@@ -13,6 +13,7 @@ class HomePlusControlPlatform {
         this.home_id = config["home_id"];
         this.token = config["token"];
         HomePlusControlPlatform.Accessory = config["accessories"];
+        this.loadAccessories();
         // get json using a http request
         log.info("Example platform finished initializing!");
     }
