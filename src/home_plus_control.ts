@@ -1,18 +1,4 @@
-import {
-    API,
-    APIEvent,
-    CharacteristicEventTypes,
-    CharacteristicSetCallback,
-    CharacteristicValue,
-    DynamicPlatformPlugin,
-    HAP,
-    Logging,
-    PlatformAccessory,
-    PlatformAccessoryEvent,
-    PlatformConfig,
-} from "homebridge";
-import {LightSwitch} from "./LightSwitch";
-import {DimmableLightSwitch} from "./DimmableLightSwitch";
+import {API, Categories, CharacteristicSetCallback, CharacteristicValue, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformAccessoryEvent, PlatformConfig,} from "homebridge";
 
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
@@ -22,6 +8,7 @@ let Accessory: typeof PlatformAccessory;
 
 export = (api: API) => {
     hap = api.hap;
+    Accessory = api.platformAccessory;
 
     api.registerPlatform(PLATFORM_NAME, HomePlusControlPlatform);
 };
@@ -154,7 +141,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     addAccessory(name: string, id: string): void {
         this.log.info("Adding new accessory with name %s", name);
 
-        const accessory = new Accessory(name, id);
+        const accessory = new Accessory(name, id, Categories.LIGHTBULB);
 
         accessory.addService(hap.Service.Lightbulb, name);
 

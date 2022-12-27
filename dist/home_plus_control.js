@@ -101,7 +101,7 @@ class HomePlusControlPlatform {
     }
     addAccessory(name, id) {
         this.log.info("Adding new accessory with name %s", name);
-        const accessory = new Accessory(name, id);
+        const accessory = new Accessory(name, id, 5 /* Categories.LIGHTBULB */);
         accessory.addService(hap.Service.Lightbulb, name);
         this.configureAccessory(accessory);
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -113,6 +113,7 @@ HomePlusControlPlatform.AccessoryBridge = {};
 HomePlusControlPlatform.LightSwitchState = {};
 module.exports = (api) => {
     hap = api.hap;
+    Accessory = api.platformAccessory;
     api.registerPlatform(PLATFORM_NAME, HomePlusControlPlatform);
 };
 //# sourceMappingURL=home_plus_control.js.map
