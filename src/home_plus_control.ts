@@ -74,7 +74,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         this.loadAsyncAccessories().then(() => {
             for (const id of HomePlusControlPlatform.Accessories) {
                 this.log.info("Adding accessory with id " + id);
-                this.addAccessory(HomePlusControlPlatform.AccessoryName[id], id, HomePlusControlPlatform.AccessoryBridge[id]);
+                this.addAccessory(HomePlusControlPlatform.AccessoryName[id], id);
             }
             this.log.info("Loaded accessories: " + HomePlusControlPlatform.Accessories);
         });
@@ -151,11 +151,10 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         });
     }
 
-    addAccessory(name: string, id: string, bridge: string): void {
+    addAccessory(name: string, id: string): void {
         this.log.info("Adding new accessory with name %s", name);
 
-        const uuid = hap.uuid.generate(name);
-        const accessory = new Accessory(name, uuid);
+        const accessory = new Accessory(name, id);
 
         accessory.addService(hap.Service.Lightbulb, name);
 

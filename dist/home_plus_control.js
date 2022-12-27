@@ -28,7 +28,7 @@ class HomePlusControlPlatform {
         this.loadAsyncAccessories().then(() => {
             for (const id of HomePlusControlPlatform.Accessories) {
                 this.log.info("Adding accessory with id " + id);
-                this.addAccessory(HomePlusControlPlatform.AccessoryName[id], id, HomePlusControlPlatform.AccessoryBridge[id]);
+                this.addAccessory(HomePlusControlPlatform.AccessoryName[id], id);
             }
             this.log.info("Loaded accessories: " + HomePlusControlPlatform.Accessories);
         });
@@ -99,10 +99,9 @@ class HomePlusControlPlatform {
             }
         });
     }
-    addAccessory(name, id, bridge) {
+    addAccessory(name, id) {
         this.log.info("Adding new accessory with name %s", name);
-        const uuid = hap.uuid.generate(name);
-        const accessory = new Accessory(name, uuid);
+        const accessory = new Accessory(name, id);
         accessory.addService(hap.Service.Lightbulb, name);
         this.configureAccessory(accessory);
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
