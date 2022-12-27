@@ -49,6 +49,18 @@ export class DimmableLightSwitch implements AccessoryPlugin {
                 DimmableLightSwitch.LightSwitchState[this.id] = this.switchBrightness > 0;
             });
 
+        this.switchService.getCharacteristic(hap.Characteristic.On)
+            .onGet(() => {
+                return DimmableLightSwitch.LightSwitchState[this.id];
+            })
+            .onSet((value: CharacteristicValue) => {
+                this.switchBrightness = value as boolean ? 100 : 0;
+                log.info("Switch brightness was set to: " + this.switchBrightness);
+                this.setBrightness(this.switchBrightness);
+                DimmableLightSwitch.LightBrightnessState[this.id] = this.switchBrightness;
+                DimmableLightSwitch.LightSwitchState[this.id] = this.switchBrightness > 0;
+            });
+
         this.informationService = new hap.Service.AccessoryInformation()
             .setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios")
             .setCharacteristic(hap.Characteristic.Model, "Some BTcino Model")
