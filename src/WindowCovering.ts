@@ -9,13 +9,12 @@ import {
     CharacteristicEventTypes
 } from "homebridge";
 
-export class DimmableLightSwitch implements AccessoryPlugin {
+export class WindowCovering implements AccessoryPlugin {
 
     private readonly log: Logging;
 
-    public static LightBrightnessState: { [key: string]: number } = {};
-    public static LightSwitchState: { [key: string]: boolean } = {};
-    private switchBrightness = 0;
+    public static WindowCoveringState: { [key: string]: number } = {};
+    public static WindowCoveringCurrent: { [key: string]: number } = {};
     private id: string = "";
     private home_id: string = "";
     private bridge: string = "";
@@ -35,31 +34,22 @@ export class DimmableLightSwitch implements AccessoryPlugin {
         this.bridge = bridge;
         this.token = token;
 
-        this.switchService = new hap.Service.Lightbulb(name);
+        this.switchService = new hap.Service.WindowCovering(name);
 
-        this.switchService.getCharacteristic(hap.Characteristic.Brightness)
+        this.switchService.getCharacteristic(hap.Characteristic.CurrentPosition)
             .onGet(() => {
-                return DimmableLightSwitch.LightSwitchState[this.id] ? DimmableLightSwitch.LightBrightnessState[this.id] : 0;
+                return WindowCovering.WindowCoveringCurrent[this.id];
+            })
+
+        this.switchService.getCharacteristic(hap.Characteristic.TargetPosition)
+            .onGet(() => {
+                return WindowCovering.WindowCoveringState[this.id];
             })
             .onSet((value: CharacteristicValue) => {
-                this.switchBrightness = value as number;
-                log.info("Switch brightness was set to: " + this.switchBrightness);
-                this.setBrightness(this.switchBrightness);
-                DimmableLightSwitch.LightBrightnessState[this.id] = this.switchBrightness;
-                DimmableLightSwitch.LightSwitchState[this.id] = this.switchBrightness > 0;
+                this.setWindowCoverPosition(value as number);
+                WindowCovering.WindowCoveringState[this.id] = value as number;
             });
 
-        this.switchService.getCharacteristic(hap.Characteristic.On)
-            .onGet(() => {
-                return DimmableLightSwitch.LightSwitchState[this.id];
-            })
-            .onSet((value: CharacteristicValue) => {
-                this.switchBrightness = value as boolean ? DimmableLightSwitch.LightBrightnessState[this.id] : 0;
-                log.info("Switch brightness was set to: " + this.switchBrightness);
-                this.setBrightness(this.switchBrightness);
-                DimmableLightSwitch.LightBrightnessState[this.id] = this.switchBrightness;
-                DimmableLightSwitch.LightSwitchState[this.id] = this.switchBrightness > 0;
-            });
 
         this.informationService = new hap.Service.AccessoryInformation()
             .setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios")
@@ -77,10 +67,11 @@ export class DimmableLightSwitch implements AccessoryPlugin {
         this.log("Identify!");
     }
 
-    setBrightness(brightness: number) {
-        this.setState(brightness)
+    setWindowCoverPosition(position: number) {
+        this.setState(position)
             .then(() => {
-                this.log.info("Successfully set brightness to: " + brightness);
+                this.log.info("Successfully set position to: " + position);
+                WindowCovering.WindowCoveringCurrent[this.id] = position;
             });
 
         /*fetch('https://api.netatmo.com/api/setstate', {
@@ -117,8 +108,7 @@ export class DimmableLightSwitch implements AccessoryPlugin {
                     modules: [
                         {
                             id: this.id,
-                            brightness: state,
-                            on: state > 0,
+                            target_position: state,
                             bridge: this.bridge
                         }]
                 }

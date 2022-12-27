@@ -1,5 +1,6 @@
 "use strict";
 const DimmableLightSwitch_1 = require("./DimmableLightSwitch");
+const WindowCovering_1 = require("./WindowCovering");
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
 let hap;
@@ -13,9 +14,14 @@ class HomePlusControlPlatform {
         this.home_id = config["home_id"];
         this.token = config["token"];
         HomePlusControlPlatform.Accessory = config["accessories"];
+        HomePlusControlPlatform.WindowCovers = config["window_covers"];
         for (const id in HomePlusControlPlatform.Accessory) {
             log.info("Adding accessory with id " + id + " and name " + HomePlusControlPlatform.Accessory[id]);
             HomePlusControlPlatform.Accessories.push(id);
+        }
+        for (const id in HomePlusControlPlatform.WindowCovers) {
+            log.info("Adding window cover with id " + id + " and name " + HomePlusControlPlatform.WindowCovers[id]);
+            HomePlusControlPlatform.WindowCoverList.push(id);
         }
         this.loadAccessories();
         // get json using a http request
@@ -63,6 +69,10 @@ class HomePlusControlPlatform {
             this.log.info("Adding accessory with id " + id);
             foundAccessories.push(new DimmableLightSwitch_1.DimmableLightSwitch(hap, this.log, HomePlusControlPlatform.Accessory[id], id, this.home_id, "00:03:50:a2:4a:7f", this.token));
         }
+        for (const id of HomePlusControlPlatform.WindowCoverList) {
+            this.log.info("Adding window cover with id " + id);
+            foundAccessories.push(new WindowCovering_1.WindowCovering(hap, this.log, HomePlusControlPlatform.WindowCovers[id], id, this.home_id, "00:03:50:a2:4a:7f", this.token));
+        }
         callback(foundAccessories);
         /*callback([
             new LightSwitch(hap, this.log, "Bett Rechts", "a24a7f-2b10-f0592c453f2c", this.home_id, "00:03:50:a2:4a:7f", this.token),
@@ -75,7 +85,9 @@ HomePlusControlPlatform.Accessory = {
     "a24a7f-2b10-f0592c453f2c": "Bett Rechts",
     "a24a7f-2c10-f0592c432712": "Bett Links"
 };
+HomePlusControlPlatform.WindowCovers = {};
 HomePlusControlPlatform.Accessories = [];
+HomePlusControlPlatform.WindowCoverList = [];
 HomePlusControlPlatform.AccessoryName = {};
 module.exports = (api) => {
     hap = api.hap;
