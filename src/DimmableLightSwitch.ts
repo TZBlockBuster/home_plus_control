@@ -35,16 +35,6 @@ export class DimmableLightSwitch implements AccessoryPlugin {
 
         this.switchService = new hap.Service.Lightbulb(name);
 
-        /*this.switchService.getCharacteristic(hap.Characteristic.On)
-            .onGet(() => {
-                this.log.info("Current state of the switch was returned: " + (this.switchBrightness > 0 ? "ON" : "OFF"));
-                return this.switchBrightness > 0;
-            })
-            .onSet((value: CharacteristicValue) => {
-                this.switchBrightness = value as number;
-                this.log.info("Switch state was set to: " + (this.switchBrightness > 0 ? "ON" : "OFF"));
-            });*/
-
         this.switchService.getCharacteristic(hap.Characteristic.Brightness)
             .onGet(() => {
                 return this.switchBrightness;
@@ -72,7 +62,12 @@ export class DimmableLightSwitch implements AccessoryPlugin {
     }
 
     setBrightness(brightness: number) {
-        fetch('https://api.netatmo.com/api/setstate', {
+        this.setState(brightness)
+            .then(() => {
+                this.log.info("Successfully set brightness to: " + brightness);
+            });
+
+        /*fetch('https://api.netatmo.com/api/setstate', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -94,7 +89,28 @@ export class DimmableLightSwitch implements AccessoryPlugin {
             .then(response => response.json())
             .then(data => {
                 console.log('Success:', data);
-            });
+            });*/
+    }
+
+    async setState(state: number) {
+        const response = await fetch('https://api.netatmo.com/api/setstate', {
+            method: 'POST',
+            body: JSON.stringify({
+                home: {
+                    id: this.home_id,
+                    modules: [
+                        {
+                            id: this.id,
+                            brightness: state,
+                            bridge: this.bridge
+                        }]
+                }
+            }),
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.token
+            }
+        });
     }
 
     /*
