@@ -21,6 +21,8 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
     private readonly homeAccessories: PlatformAccessory[] = [];
 
+    public static IDToIDLookup: { [id: string]: string } = {};
+
     public static Accessories: string[] = []
     public static AccessoryName: { [key: string]: string } = {};
     public static AccessoryBridge: { [key: string]: string } = {};
@@ -108,11 +110,13 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
             return HomePlusControlPlatform.LightSwitchState[accessory.UUID];
         }).onSet((value: CharacteristicValue, callback: CharacteristicSetCallback) => {
             HomePlusControlPlatform.LightSwitchState[accessory.UUID] = value as boolean;
-            this.setState(accessory.UUID, value as boolean).then(r => {
+            this.setState(HomePlusControlPlatform.IDToIDLookup[accessory.UUID], value as boolean).then(r => {
                 this.log.info("Set state of " + accessory.displayName + " to " + value);
             });
             callback(undefined);
         });
+
+        this.homeAccessories.push(accessory);
     }
 
 
@@ -141,7 +145,10 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     addAccessory(name: string, id: string): void {
         this.log.info("Adding new accessory with name %s", name);
 
-        const accessory = new Accessory(name, id, Categories.LIGHTBULB);
+        const uuid = hap.uuid.generate(name);
+        const accessory = new Accessory(name, uuid, Categories.LIGHTBULB);
+
+        HomePlusControlPlatform.IDToIDLookup[uuid] = id;
 
         accessory.addService(hap.Service.Lightbulb, name);
 

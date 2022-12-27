@@ -72,11 +72,12 @@ class HomePlusControlPlatform {
             return HomePlusControlPlatform.LightSwitchState[accessory.UUID];
         }).onSet((value, callback) => {
             HomePlusControlPlatform.LightSwitchState[accessory.UUID] = value;
-            this.setState(accessory.UUID, value).then(r => {
+            this.setState(HomePlusControlPlatform.IDToIDLookup[accessory.UUID], value).then(r => {
                 this.log.info("Set state of " + accessory.displayName + " to " + value);
             });
             callback(undefined);
         });
+        this.homeAccessories.push(accessory);
     }
     async setState(id, state) {
         const response = await fetch('https://api.netatmo.com/api/setstate', {
@@ -101,12 +102,15 @@ class HomePlusControlPlatform {
     }
     addAccessory(name, id) {
         this.log.info("Adding new accessory with name %s", name);
-        const accessory = new Accessory(name, id, 5 /* Categories.LIGHTBULB */);
+        const uuid = hap.uuid.generate(name);
+        const accessory = new Accessory(name, uuid, 5 /* Categories.LIGHTBULB */);
+        HomePlusControlPlatform.IDToIDLookup[uuid] = id;
         accessory.addService(hap.Service.Lightbulb, name);
         this.configureAccessory(accessory);
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
     }
 }
+HomePlusControlPlatform.IDToIDLookup = {};
 HomePlusControlPlatform.Accessories = [];
 HomePlusControlPlatform.AccessoryName = {};
 HomePlusControlPlatform.AccessoryBridge = {};
