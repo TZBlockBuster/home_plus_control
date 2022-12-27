@@ -160,7 +160,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
         accessory.addService(hap.Service.Switch, name);
 
-        this.configureAccessory(accessory);
+        this.configureAccessoryNew(accessory);
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
     }
 }

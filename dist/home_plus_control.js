@@ -112,7 +112,7 @@ class HomePlusControlPlatform {
         const accessory = new Accessory(name, uuid, 8 /* Categories.SWITCH */);
         HomePlusControlPlatform.IDToIDLookup[uuid] = id;
         accessory.addService(hap.Service.Switch, name);
-        this.configureAccessory(accessory);
+        this.configureAccessoryNew(accessory);
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
     }
 }
