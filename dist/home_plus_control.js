@@ -1,35 +1,24 @@
 "use strict";
+const LightSwitch_1 = require("./LightSwitch");
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
 let hap;
-let Accessory;
 class HomePlusControlPlatform {
     constructor(log, config, api) {
-        this.homeAccessories = [];
         this.home_id = "";
         this.token = "";
         this.log = log;
-        this.api = api;
         // probably parse config or something here
         log.info("Home + Control Platform Plugin Loading...");
         this.home_id = config["home_id"];
         this.token = config["token"];
-        try {
-            this.loadAccessories();
-        }
-        catch (e) {
-            this.log.error("Error loading accessories: " + e);
-        }
+        HomePlusControlPlatform.Accessory = config["accessories"];
         // get json using a http request
         log.info("Example platform finished initializing!");
     }
     loadAccessories() {
         this.log.info("Loading accessories...");
         this.loadAsyncAccessories().then(() => {
-            for (const id of HomePlusControlPlatform.Accessories) {
-                this.log.info("Adding accessory with id " + id);
-                this.addAccessory(HomePlusControlPlatform.AccessoryName[id], id);
-            }
             this.log.info("Loaded accessories: " + HomePlusControlPlatform.Accessories);
         });
     }
@@ -53,7 +42,7 @@ class HomePlusControlPlatform {
                         if (module["type"] === "BNLD") {
                             HomePlusControlPlatform.Accessories.push(module["id"]);
                             HomePlusControlPlatform.AccessoryName[module["id"]] = module["name"];
-                            HomePlusControlPlatform.AccessoryBridge[module["id"]] = module["bridge"];
+                            LightSwitch_1.LightSwitch.LightSwitchState[module["id"]] = module["on"];
                         }
                     });
                 }
@@ -63,71 +52,28 @@ class HomePlusControlPlatform {
             });
         }
     }
-    configureAccessory(accessory) {
-        this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
-    }
-    configureAccessoryNew(accessory) {
-        this.log("Configuring accessory %s", accessory.displayName);
-        accessory.on("identify" /* PlatformAccessoryEvent.IDENTIFY */, () => {
-            this.log("%s identified!", accessory.displayName);
-        });
-        accessory.getService(hap.Service.Lightbulb).getCharacteristic(hap.Characteristic.On)
-            .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
-            this.log.info("%s Light was set to: " + value);
-            HomePlusControlPlatform.LightSwitchState[accessory.UUID] = value;
-            this.setState(HomePlusControlPlatform.IDToIDLookup[accessory.UUID], value).then(r => {
-                this.log("Set state: " + r);
-            });
-            callback();
-        })
-            .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
-            this.log.info("%s Light was get: " + HomePlusControlPlatform.LightSwitchState[accessory.UUID], accessory.displayName);
-            callback(undefined, HomePlusControlPlatform.LightSwitchState[accessory.UUID]);
-        });
-        /*accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
-        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "Netatmo");
-        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, HomePlusControlPlatform.IDToIDLookup[accessory.UUID]);*/
-        this.homeAccessories.push(accessory);
-    }
-    async setState(id, state) {
-        const response = await fetch('https://api.netatmo.com/api/setstate', {
-            method: 'POST',
-            body: JSON.stringify({
-                home: {
-                    id: this.home_id,
-                    modules: [
-                        {
-                            id: id,
-                            on: state,
-                            bridge: HomePlusControlPlatform.AccessoryBridge[id]
-                        }
-                    ]
-                }
-            }),
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + this.token
-            }
-        });
-    }
-    addAccessory(name, id) {
-        this.log.info("Adding new accessory with name %s", name);
-        const uuid = hap.uuid.generate(name);
-        const accessory = new Accessory(name, uuid, 5 /* Categories.LIGHTBULB */);
-        HomePlusControlPlatform.IDToIDLookup[uuid] = id;
-        accessory.addService(hap.Service.Lightbulb, name);
-        this.configureAccessoryNew(accessory);
-        this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+    accessories(callback) {
+        var foundAccessories = [];
+        for (const id of HomePlusControlPlatform.Accessories) {
+            this.log.info("Adding accessory with id " + id);
+            foundAccessories.push(new LightSwitch_1.LightSwitch(hap, this.log, HomePlusControlPlatform.Accessory[id], id, this.home_id, "00:03:50:a2:4a:7f", this.token));
+        }
+        callback(foundAccessories);
+        /*callback([
+            new LightSwitch(hap, this.log, "Bett Rechts", "a24a7f-2b10-f0592c453f2c", this.home_id, "00:03:50:a2:4a:7f", this.token),
+            new LightSwitch(hap, this.log, "Bett Links", "a24a7f-2c10-f0592c432712", this.home_id, "00:03:50:a2:4a:7f", this.token),
+            new DimmableLightSwitch(hap, this.log, "Wand", "a24a7f-0c10-f0592c1a45ba", this.home_id, "00:03:50:a2:4a:7f", this.token)
+        ]);*/
     }
 }
-HomePlusControlPlatform.IDToIDLookup = {};
+HomePlusControlPlatform.Accessory = {
+    "a24a7f-2b10-f0592c453f2c": "Bett Rechts",
+    "a24a7f-2c10-f0592c432712": "Bett Links"
+};
 HomePlusControlPlatform.Accessories = [];
 HomePlusControlPlatform.AccessoryName = {};
-HomePlusControlPlatform.AccessoryBridge = {};
-HomePlusControlPlatform.LightSwitchState = {};
 module.exports = (api) => {
     hap = api.hap;
-    Accessory = api.platformAccessory;
     api.registerPlatform(PLATFORM_NAME, HomePlusControlPlatform);
 };
 //# sourceMappingURL=home_plus_control.js.map

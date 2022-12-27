@@ -1,70 +1,58 @@
-import {API, Categories, CharacteristicEventTypes, CharacteristicGetCallback, CharacteristicSetCallback, CharacteristicValue, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformAccessoryEvent, PlatformConfig,} from "homebridge";
+import {AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin,} from "homebridge";
+import {LightSwitch} from "./LightSwitch";
+import {DimmableLightSwitch} from "./DimmableLightSwitch";
 
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
 
 let hap: HAP;
-let Accessory: typeof PlatformAccessory;
 
 export = (api: API) => {
     hap = api.hap;
-    Accessory = api.platformAccessory;
 
     api.registerPlatform(PLATFORM_NAME, HomePlusControlPlatform);
 };
 
-class HomePlusControlPlatform implements DynamicPlatformPlugin {
+class HomePlusControlPlatform implements StaticPlatformPlugin {
 
 
     private readonly log: Logging;
 
+    public static Accessory = {
+        "a24a7f-2b10-f0592c453f2c": "Bett Rechts",
+        "a24a7f-2c10-f0592c432712": "Bett Links"
+    }
 
-    private readonly homeAccessories: PlatformAccessory[] = [];
-
-    public static IDToIDLookup: { [id: string]: string } = {};
 
     public static Accessories: string[] = []
+
+
     public static AccessoryName: { [key: string]: string } = {};
-    public static AccessoryBridge: { [key: string]: string } = {};
-    public static LightSwitchState: { [key: string]: boolean } = {};
 
     private home_id: string = "";
     private token: string = "";
 
-    private readonly api: API;
-
     constructor(log: Logging, config: PlatformConfig, api: API) {
         this.log = log;
-        this.api = api;
 
         // probably parse config or something here
 
         log.info("Home + Control Platform Plugin Loading...");
 
-
         this.home_id = config["home_id"];
         this.token = config["token"];
+        HomePlusControlPlatform.Accessory = config["accessories"];
 
-
-        try {
-            this.loadAccessories();
-        } catch (e) {
-            this.log.error("Error loading accessories: " + e);
-        }
+        this.loadAccessories();
 
         // get json using a http request
 
         log.info("Example platform finished initializing!");
     }
 
-
     loadAccessories(): void {
         this.log.info("Loading accessories...");
         this.loadAsyncAccessories().then(() => {
-            for (const id of HomePlusControlPlatform.Accessories) {
-                this.log.info("Adding accessory with id " + id);
-                this.addAccessory(HomePlusControlPlatform.AccessoryName[id], id);
-            }
             this.log.info("Loaded accessories: " + HomePlusControlPlatform.Accessories);
         });
     }
@@ -88,7 +76,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                         if (module["type"] === "BNLD") {
                             HomePlusControlPlatform.Accessories.push(module["id"])
                             HomePlusControlPlatform.AccessoryName[module["id"]] = module["name"]
-                            HomePlusControlPlatform.AccessoryBridge[module["id"]] = module["bridge"]
+                            LightSwitch.LightSwitchState[module["id"]] = module["on"]
                         }
                     });
                 } else {
@@ -98,73 +86,17 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         }
     }
 
-    configureAccessory(accessory: PlatformAccessory) {
-        this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
-    }
-
-    configureAccessoryNew(accessory: PlatformAccessory): void {
-
-        this.log("Configuring accessory %s", accessory.displayName);
-
-        accessory.on(PlatformAccessoryEvent.IDENTIFY, () => {
-            this.log("%s identified!", accessory.displayName);
-        });
-
-
-        accessory.getService(hap.Service.Lightbulb)!.getCharacteristic(hap.Characteristic.On)
-            .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-                this.log.info("%s Light was set to: " + value);
-                HomePlusControlPlatform.LightSwitchState[accessory.UUID] = value as boolean;
-                this.setState(HomePlusControlPlatform.IDToIDLookup[accessory.UUID], value as boolean).then(r => {
-                    this.log("Set state: " + r);
-                });
-                callback();
-            })
-            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
-                this.log.info("%s Light was get: " + HomePlusControlPlatform.LightSwitchState[accessory.UUID], accessory.displayName);
-                callback(undefined, HomePlusControlPlatform.LightSwitchState[accessory.UUID]);
-            });
-
-        /*accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
-        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "Netatmo");
-        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, HomePlusControlPlatform.IDToIDLookup[accessory.UUID]);*/
-
-        this.homeAccessories.push(accessory);
-    }
-
-
-    async setState(id: string, state: boolean) {
-        const response = await fetch('https://api.netatmo.com/api/setstate', {
-            method: 'POST',
-            body: JSON.stringify({
-                home: {
-                    id: this.home_id,
-                    modules: [
-                        {
-                            id: id,
-                            on: state,
-                            bridge: HomePlusControlPlatform.AccessoryBridge[id]
-                        }]
-                }
-            }),
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + this.token
-            }
-        });
-    }
-
-    addAccessory(name: string, id: string): void {
-        this.log.info("Adding new accessory with name %s", name);
-
-        const uuid = hap.uuid.generate(name);
-        const accessory = new Accessory(name, uuid, Categories.LIGHTBULB);
-
-        HomePlusControlPlatform.IDToIDLookup[uuid] = id;
-
-        accessory.addService(hap.Service.Lightbulb, name);
-
-        this.configureAccessoryNew(accessory);
-        this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+    accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
+        var foundAccessories: AccessoryPlugin[] = [];
+        for (const id of HomePlusControlPlatform.Accessories) {
+            this.log.info("Adding accessory with id " + id);
+            foundAccessories.push(new LightSwitch(hap, this.log, HomePlusControlPlatform.Accessory[id], id, this.home_id, "00:03:50:a2:4a:7f", this.token));
+        }
+        callback(foundAccessories);
+        /*callback([
+            new LightSwitch(hap, this.log, "Bett Rechts", "a24a7f-2b10-f0592c453f2c", this.home_id, "00:03:50:a2:4a:7f", this.token),
+            new LightSwitch(hap, this.log, "Bett Links", "a24a7f-2c10-f0592c432712", this.home_id, "00:03:50:a2:4a:7f", this.token),
+            new DimmableLightSwitch(hap, this.log, "Wand", "a24a7f-0c10-f0592c1a45ba", this.home_id, "00:03:50:a2:4a:7f", this.token)
+        ]);*/
     }
 }

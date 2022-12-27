@@ -18,10 +18,10 @@ class LightSwitch {
         this.switchService.getCharacteristic(hap.Characteristic.On)
             .onGet(() => {
             this.log.info("Current state of the switch was returned: " + (this.switchOn ? "ON" : "OFF"));
-            return this.switchOn;
+            return LightSwitch.LightSwitchState[this.id];
         })
             .onSet((value) => {
-            this.switchOn = value;
+            LightSwitch.LightSwitchState[this.id] = value;
             this.log.info("Switch state was set to: " + (this.switchOn ? "ON" : "OFF"));
             this.setState(this.switchOn);
         });
@@ -46,13 +46,13 @@ class LightSwitch {
                 'Authorization': 'Bearer ' + this.token
             },
             body: JSON.stringify({
-                "home": {
-                    "id": this.home_id,
-                    "modules": [
+                home: {
+                    id: this.home_id,
+                    modules: [
                         {
-                            "id": this.id,
-                            "on": state,
-                            "bridge": this.bridge
+                            id: this.id,
+                            on: state,
+                            bridge: this.bridge
                         }
                     ]
                 }
@@ -75,4 +75,5 @@ class LightSwitch {
     }
 }
 exports.LightSwitch = LightSwitch;
+LightSwitch.LightSwitchState = {};
 //# sourceMappingURL=LightSwitch.js.map
