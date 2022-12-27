@@ -18,16 +18,12 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
 
     private readonly log: Logging;
 
-    public static Accessory = {
-        "a24a7f-2b10-f0592c453f2c": "Bett Rechts",
-        "a24a7f-2c10-f0592c432712": "Bett Links"
-    }
-
 
     public static Accessories: string[] = []
 
 
     public static AccessoryName: { [key: string]: string } = {};
+    public static AccessoryBridge: { [key: string]: string } = {};
 
     public static LightSwitchState: { [key: string]: boolean } = {};
 
@@ -40,6 +36,12 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
         // probably parse config or something here
 
         log.info("Home + Control Platform Plugin Loading...");
+
+        try {
+            this.loadAccessories();
+        } catch (e) {
+            this.log.error("Error loading accessories: " + e);
+        }
 
         this.home_id = config["home_id"];
         this.token = config["token"];
@@ -73,48 +75,52 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
     }
 
     loadAccessories(): void {
-        fetch('https://api.netatmo.com/api/homesdata', {
+        this.log.info("Loading accessories...");
+        this.loadAsyncAccessories().then(() => {
+            this.log.info("Loaded accessories: " + HomePlusControlPlatform.Accessories);
+        });
+    }
+
+    async loadAsyncAccessories() {
+        const response = await fetch('https://api.netatmo.com/api/homesdata', {
             method: 'GET',
             headers: {
                 'accept': 'application/json',
                 'Authorization': 'Bearer ' + this.token
             }
         })
-            .then(response => response.json())
-            .then(data => {
-                this.log.info("Got data: " + JSON.stringify(data));
-                if (data["error"] != null) {
-                    this.log.error("Error: " + data["error"]["message"]);
-                } else if (data["body"]["homes"] != null) {
-                    data["body"]["homes"].forEach((home: any) => {
-                        if (home["modules"] != null) {
-                            home["modules"].forEach((module: any) => {
-                                if (module["type"] === "BNLD") {
-                                    HomePlusControlPlatform.Accessories.push(module["id"])
-                                    HomePlusControlPlatform.AccessoryName[module["id"]] = module["name"]
-                                }
-                            });
-                        } else {
-                            this.log.error("No modules found for home " + home["name"])
+        const data = await response.json()
+        this.log.info("Got data: " + JSON.stringify(data));
+        if (data["error"] != null) {
+            this.log.error("Error: " + data["error"]["message"]);
+        } else if (data["body"]["homes"] != null) {
+            data["body"]["homes"].forEach((home: any) => {
+                if (home["modules"] != null) {
+                    home["modules"].forEach((module: any) => {
+                        if (module["type"] === "BNLD") {
+                            HomePlusControlPlatform.Accessories.push(module["id"])
+                            HomePlusControlPlatform.AccessoryName[module["id"]] = module["name"]
+                            HomePlusControlPlatform.AccessoryBridge[module["id"]] = module["bridge"]
                         }
                     });
                 } else {
-                    this.log.error("Error: No homes found");
+                    this.log.error("No modules found for home " + home["name"])
                 }
             });
+        }
     }
 
     accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
-        var foundAccessories: AccessoryPlugin[] = [];
-        /*for (const id of HomePlusControlPlatform.Accessories) {
+        const foundAccessories: AccessoryPlugin[] = [];
+        for (const id of HomePlusControlPlatform.Accessories) {
             this.log.info("Adding accessory with id " + id);
-            foundAccessories.push(new LightSwitch(hap, this.log, HomePlusControlPlatform.AccessoryName[id], id));
+            foundAccessories.push(new LightSwitch(hap, this.log, HomePlusControlPlatform.AccessoryName[id], id, this.home_id, HomePlusControlPlatform.AccessoryBridge[id], this.token));
         }
-        callback(foundAccessories);*/
-        callback([
+        callback(foundAccessories);
+        /*callback([
             new LightSwitch(hap, this.log, "Bett Rechts", "a24a7f-2b10-f0592c453f2c", this.home_id, "00:03:50:a2:4a:7f", this.token),
             new LightSwitch(hap, this.log, "Bett Links", "a24a7f-2c10-f0592c432712", this.home_id, "00:03:50:a2:4a:7f", this.token),
             new DimmableLightSwitch(hap, this.log, "Wand", "a24a7f-0c10-f0592c1a45ba", this.home_id, "00:03:50:a2:4a:7f", this.token)
-        ]);
+        ]);*/
     }
 }
