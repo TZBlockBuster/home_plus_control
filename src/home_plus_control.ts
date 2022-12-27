@@ -18,7 +18,7 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
 
     private readonly log: Logging;
 
-    public static Accessory = {
+    public static Accessory: { [key: string]: string } = {
         "a24a7f-2b10-f0592c453f2c": "Bett Rechts",
         "a24a7f-2c10-f0592c432712": "Bett Links"
     }
@@ -43,6 +43,10 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
         this.token = config["token"];
         HomePlusControlPlatform.Accessory = config["accessories"];
 
+        for (const id in HomePlusControlPlatform.Accessory) {
+            HomePlusControlPlatform.Accessories.push(id);
+        }
+
         this.loadAccessories();
 
         // get json using a http request
@@ -58,7 +62,7 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
     }
 
     async loadAsyncAccessories() {
-        const response = await fetch('https://api.netatmo.com/api/homesdata', {
+        const response = await fetch('https://api.netatmo.com/api/homestatus?home_id=' + this.home_id, {
             method: 'GET',
             headers: {
                 'accept': 'application/json',
