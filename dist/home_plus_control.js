@@ -44,7 +44,6 @@ class HomePlusControlPlatform {
                 if (home["modules"] != null) {
                     home["modules"].forEach((module) => {
                         if (module["type"] === "BNLD") {
-                            HomePlusControlPlatform.Accessories.push(module["id"]);
                             HomePlusControlPlatform.AccessoryName[module["id"]] = module["name"];
                             DimmableLightSwitch_1.DimmableLightSwitch.LightBrightnessState[module["id"]] = module["brightness"];
                             DimmableLightSwitch_1.DimmableLightSwitch.LightSwitchState[module["id"]] = module["on"];

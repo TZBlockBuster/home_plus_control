@@ -78,7 +78,6 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
                 if (home["modules"] != null) {
                     home["modules"].forEach((module: any) => {
                         if (module["type"] === "BNLD") {
-                            HomePlusControlPlatform.Accessories.push(module["id"])
                             HomePlusControlPlatform.AccessoryName[module["id"]] = module["name"]
                             DimmableLightSwitch.LightBrightnessState[module["id"]] = module["brightness"]
                             DimmableLightSwitch.LightSwitchState[module["id"]] = module["on"]
