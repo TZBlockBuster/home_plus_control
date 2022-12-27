@@ -10,14 +10,14 @@ class HomePlusControlPlatform {
         this.log = log;
         // probably parse config or something here
         log.info("Home + Control Platform Plugin Loading...");
+        this.home_id = config["home_id"];
+        this.token = config["token"];
         try {
             this.loadAccessories();
         }
         catch (e) {
             this.log.error("Error loading accessories: " + e);
         }
-        this.home_id = config["home_id"];
-        this.token = config["token"];
         // get json using a http request
         log.info("Example platform finished initializing!");
     }
