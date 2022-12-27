@@ -47,7 +47,7 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
             HomePlusControlPlatform.Accessories.push(id);
         }
 
-        log.info("Accessories: " + HomePlusControlPlatform.Accessory);
+        log.info("Accessories: " + HomePlusControlPlatform.Accessory.toString());
 
         this.loadAccessories();
 
@@ -59,7 +59,7 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
     loadAccessories(): void {
         this.log.info("Loading accessories...");
         this.loadAsyncAccessories().then(() => {
-            this.log.info("Loaded Data: " + DimmableLightSwitch.LightBrightnessState);
+            this.log.info("Loaded Data: " + DimmableLightSwitch.LightBrightnessState.toString());
         });
     }
 
