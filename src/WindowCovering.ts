@@ -6,7 +6,7 @@ import {
     HAP,
     Logging,
     Service,
-    CharacteristicEventTypes
+    CharacteristicEventTypes, HAPStatus
 } from "homebridge";
 
 export class WindowCovering implements AccessoryPlugin {
@@ -37,13 +37,19 @@ export class WindowCovering implements AccessoryPlugin {
         this.switchService = new hap.Service.WindowCovering(name);
 
         this.switchService.getCharacteristic(hap.Characteristic.CurrentPosition)
-            .onGet(() => {
-                return WindowCovering.WindowCoveringCurrent[this.id];
-            })
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                this.getState().then((state) => {
+                    this.log.info("Successfully get current position: " + state.current_position);
+                    callback(HAPStatus.SUCCESS, state.current_position);
+                });
+            });
 
         this.switchService.getCharacteristic(hap.Characteristic.TargetPosition)
-            .onGet(() => {
-                return WindowCovering.WindowCoveringState[this.id];
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                this.getState().then((state) => {
+                    this.log.info("Successfully get target position: " + state.target_position);
+                    callback(HAPStatus.SUCCESS, state.target_position);
+                });
             })
             .onSet((value: CharacteristicValue) => {
                 this.setWindowCoverPosition(value as number);
@@ -73,6 +79,23 @@ export class WindowCovering implements AccessoryPlugin {
                 this.log.info("Successfully set position to: " + position);
                 WindowCovering.WindowCoveringCurrent[this.id] = position;
             });
+    }
+
+    async getState(): Promise<any> {
+
+        const response = await fetch('https://api.netatmo.com/api/homestatus?home_id=' + this.home_id, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.token
+            }
+        });
+        const data = await response.json();
+        const module = data.body.home.modules.find((module: any) => module.id === this.id);
+        return {
+            current_position: module.current_position,
+            target_position: module.target_position
+        };
     }
 
     async setState(state: number) {
