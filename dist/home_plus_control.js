@@ -71,7 +71,7 @@ class HomePlusControlPlatform {
         accessory.on("identify" /* PlatformAccessoryEvent.IDENTIFY */, () => {
             this.log("%s identified!", accessory.displayName);
         });
-        accessory.getService(hap.Service.Switch).getCharacteristic(hap.Characteristic.On)
+        accessory.getService(hap.Service.Lightbulb).getCharacteristic(hap.Characteristic.On)
             .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
             this.log.info("%s Light was set to: " + value);
             HomePlusControlPlatform.LightSwitchState[accessory.UUID] = value;
@@ -81,7 +81,7 @@ class HomePlusControlPlatform {
             callback();
         })
             .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
-            this.log.info("%s Light was get: " + HomePlusControlPlatform.LightSwitchState[accessory.UUID]);
+            this.log.info("%s Light was get: " + HomePlusControlPlatform.LightSwitchState[accessory.UUID], accessory.displayName);
             callback(undefined, HomePlusControlPlatform.LightSwitchState[accessory.UUID]);
         });
         /*accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
@@ -113,9 +113,9 @@ class HomePlusControlPlatform {
     addAccessory(name, id) {
         this.log.info("Adding new accessory with name %s", name);
         const uuid = hap.uuid.generate(name);
-        const accessory = new Accessory(name, uuid, 8 /* Categories.SWITCH */);
+        const accessory = new Accessory(name, uuid, 5 /* Categories.LIGHTBULB */);
         HomePlusControlPlatform.IDToIDLookup[uuid] = id;
-        accessory.addService(hap.Service.Switch, name);
+        accessory.addService(hap.Service.Lightbulb, name);
         this.configureAccessoryNew(accessory);
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
     }
