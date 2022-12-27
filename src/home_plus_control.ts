@@ -44,16 +44,15 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
         HomePlusControlPlatform.Accessory = config["accessories"];
 
         for (const id in HomePlusControlPlatform.Accessory) {
+            log.info("Adding accessory with id " + id + " and name " + HomePlusControlPlatform.Accessory[id]);
             HomePlusControlPlatform.Accessories.push(id);
         }
-
-        log.info("Accessories: " + HomePlusControlPlatform.Accessory.toString());
 
         this.loadAccessories();
 
         // get json using a http request
 
-        log.info("Example platform finished initializing!");
+        log.info("Home + Control finished initializing!");
     }
 
     loadAccessories(): void {
