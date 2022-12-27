@@ -1,4 +1,4 @@
-import {API, Categories, CharacteristicSetCallback, CharacteristicValue, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformAccessoryEvent, PlatformConfig,} from "homebridge";
+import {API, Categories, CharacteristicEventTypes, CharacteristicSetCallback, CharacteristicValue, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformAccessoryEvent, PlatformConfig,} from "homebridge";
 
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
@@ -107,20 +107,19 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         });
 
 
-        accessory.getService(hap.Service.Switch)!.getCharacteristic(hap.Characteristic.On)
-            .onGet(() => {
-                return HomePlusControlPlatform.LightSwitchState[accessory.UUID];
-            })
-            .onSet((value: CharacteristicValue) => {
+        accessory.getService(hap.Service.Lightbulb)!.getCharacteristic(hap.Characteristic.On)
+            .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+                this.log.info("%s Light was set to: " + value);
                 HomePlusControlPlatform.LightSwitchState[accessory.UUID] = value as boolean;
                 this.setState(HomePlusControlPlatform.IDToIDLookup[accessory.UUID], value as boolean).then(r => {
-                    this.log.info("Set state of " + accessory.displayName + " to " + value);
+                    this.log("Set state: " + r);
                 });
+                callback();
             });
 
-        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
+        /* accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
         accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "Netatmo");
-        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, HomePlusControlPlatform.IDToIDLookup[accessory.UUID]);
+        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, HomePlusControlPlatform.IDToIDLookup[accessory.UUID]);*/
 
         this.homeAccessories.push(accessory);
     }

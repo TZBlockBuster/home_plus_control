@@ -68,19 +68,18 @@ class HomePlusControlPlatform {
         accessory.on("identify" /* PlatformAccessoryEvent.IDENTIFY */, () => {
             this.log("%s identified!", accessory.displayName);
         });
-        accessory.getService(hap.Service.Switch).getCharacteristic(hap.Characteristic.On)
-            .onGet(() => {
-            return HomePlusControlPlatform.LightSwitchState[accessory.UUID];
-        })
-            .onSet((value) => {
+        accessory.getService(hap.Service.Lightbulb).getCharacteristic(hap.Characteristic.On)
+            .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
+            this.log.info("%s Light was set to: " + value);
             HomePlusControlPlatform.LightSwitchState[accessory.UUID] = value;
             this.setState(HomePlusControlPlatform.IDToIDLookup[accessory.UUID], value).then(r => {
-                this.log.info("Set state of " + accessory.displayName + " to " + value);
+                this.log("Set state: " + r);
             });
+            callback();
         });
-        accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
-        accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Manufacturer, "Netatmo");
-        accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.SerialNumber, HomePlusControlPlatform.IDToIDLookup[accessory.UUID]);
+        /* accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
+        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "Netatmo");
+        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, HomePlusControlPlatform.IDToIDLookup[accessory.UUID]);*/
         this.homeAccessories.push(accessory);
     }
     async setState(id, state) {
