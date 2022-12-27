@@ -1,13 +1,4 @@
-import {
-    AccessoryPlugin,
-    CharacteristicGetCallback,
-    CharacteristicSetCallback,
-    CharacteristicValue,
-    HAP,
-    Logging,
-    Service,
-    CharacteristicEventTypes
-} from "homebridge";
+import {AccessoryPlugin, CharacteristicEventTypes, CharacteristicGetCallback, CharacteristicValue, HAP, HAPStatus, Logging, Service} from "homebridge";
 
 export class DimmableLightSwitch implements AccessoryPlugin {
 
@@ -38,27 +29,27 @@ export class DimmableLightSwitch implements AccessoryPlugin {
         this.switchService = new hap.Service.Lightbulb(name);
 
         this.switchService.getCharacteristic(hap.Characteristic.Brightness)
-            .onGet(() => {
-                return DimmableLightSwitch.LightSwitchState[this.id] ? DimmableLightSwitch.LightBrightnessState[this.id] : 0;
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                this.getState()
+                    .then((state) => {
+                        this.log.info("Successfully get brightness: " + state.brightness);
+                        callback(HAPStatus.SUCCESS, state.brightness);
+                    });
             })
             .onSet((value: CharacteristicValue) => {
-                this.switchBrightness = value as number;
-                log.info("Switch brightness was set to: " + this.switchBrightness);
-                this.setBrightness(this.switchBrightness);
-                DimmableLightSwitch.LightBrightnessState[this.id] = this.switchBrightness;
-                DimmableLightSwitch.LightSwitchState[this.id] = this.switchBrightness > 0;
+                this.setBrightness(value as number);
             });
 
         this.switchService.getCharacteristic(hap.Characteristic.On)
-            .onGet(() => {
-                return DimmableLightSwitch.LightSwitchState[this.id];
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                this.getState()
+                    .then((state) => {
+                        this.log.info("Successfully get brightness: " + state.on);
+                        callback(HAPStatus.SUCCESS, state.on);
+                    });
             })
             .onSet((value: CharacteristicValue) => {
-                this.switchBrightness = value as boolean ? DimmableLightSwitch.LightBrightnessState[this.id] : 0;
-                log.info("Switch brightness was set to: " + this.switchBrightness);
-                this.setBrightness(this.switchBrightness);
-                DimmableLightSwitch.LightBrightnessState[this.id] = this.switchBrightness;
-                DimmableLightSwitch.LightSwitchState[this.id] = this.switchBrightness > 0;
+                this.setSwitchState(value as boolean);
             });
 
         this.informationService = new hap.Service.AccessoryInformation()
@@ -82,30 +73,13 @@ export class DimmableLightSwitch implements AccessoryPlugin {
             .then(() => {
                 this.log.info("Successfully set brightness to: " + brightness);
             });
+    }
 
-        /*fetch('https://api.netatmo.com/api/setstate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + this.token
-            },
-            body: JSON.stringify({
-                "home": {
-                    "id": this.home_id,
-                    "modules": [
-                        {
-                            "id": this.id,
-                            "brightness": brightness,
-                            "bridge": this.bridge
-                        }
-                    ]
-                }
-            })
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-            });*/
+    setSwitchState(brightness: boolean) {
+        this.setStateBool(brightness)
+            .then(() => {
+                this.log.info("Successfully set brightness to: " + brightness);
+            });
     }
 
     async setState(state: number) {
@@ -118,7 +92,6 @@ export class DimmableLightSwitch implements AccessoryPlugin {
                         {
                             id: this.id,
                             brightness: state,
-                            on: state > 0,
                             bridge: this.bridge
                         }]
                 }
@@ -128,6 +101,43 @@ export class DimmableLightSwitch implements AccessoryPlugin {
                 'Authorization': 'Bearer ' + this.token
             }
         });
+    }
+
+    async setStateBool(on: boolean) {
+        const response = await fetch('https://api.netatmo.com/api/setstate', {
+            method: 'POST',
+            body: JSON.stringify({
+                home: {
+                    id: this.home_id,
+                    modules: [
+                        {
+                            id: this.id,
+                            on: on,
+                            bridge: this.bridge
+                        }]
+                }
+            }),
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.token
+            }
+        });
+    }
+
+    async getState(): Promise<any> {
+        const response = await fetch('https://api.netatmo.com/api/homestatus?home_id=' + this.home_id, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.token
+            }
+        });
+        const data = await response.json();
+        const module = data.body.home.modules.find((module: any) => module.id === this.id);
+        return {
+            brightness: module.brightness,
+            on: module.on
+        };
     }
 
     /*

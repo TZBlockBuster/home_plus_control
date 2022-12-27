@@ -73,30 +73,6 @@ export class WindowCovering implements AccessoryPlugin {
                 this.log.info("Successfully set position to: " + position);
                 WindowCovering.WindowCoveringCurrent[this.id] = position;
             });
-
-        /*fetch('https://api.netatmo.com/api/setstate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + this.token
-            },
-            body: JSON.stringify({
-                "home": {
-                    "id": this.home_id,
-                    "modules": [
-                        {
-                            "id": this.id,
-                            "brightness": brightness,
-                            "bridge": this.bridge
-                        }
-                    ]
-                }
-            })
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-            });*/
     }
 
     async setState(state: number) {
