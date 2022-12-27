@@ -99,6 +99,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     }
 
     configureAccessory(accessory: PlatformAccessory) {
+        this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
     }
 
     configureAccessoryNew(accessory: PlatformAccessory): void {

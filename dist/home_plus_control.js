@@ -64,6 +64,7 @@ class HomePlusControlPlatform {
         }
     }
     configureAccessory(accessory) {
+        this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
     }
     configureAccessoryNew(accessory) {
         this.log("Configuring accessory %s", accessory.displayName);
