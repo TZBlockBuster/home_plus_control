@@ -1,5 +1,5 @@
 "use strict";
-const LightSwitch_1 = require("./LightSwitch");
+const DimmableLightSwitch_1 = require("./DimmableLightSwitch");
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
 let hap;
@@ -46,7 +46,8 @@ class HomePlusControlPlatform {
                         if (module["type"] === "BNLD") {
                             HomePlusControlPlatform.Accessories.push(module["id"]);
                             HomePlusControlPlatform.AccessoryName[module["id"]] = module["name"];
-                            LightSwitch_1.LightSwitch.LightSwitchState[module["id"]] = module["on"];
+                            DimmableLightSwitch_1.DimmableLightSwitch.LightBrightnessState[module["id"]] = module["brightness"];
+                            DimmableLightSwitch_1.DimmableLightSwitch.LightSwitchState[module["id"]] = module["on"];
                         }
                     });
                 }
@@ -60,7 +61,7 @@ class HomePlusControlPlatform {
         var foundAccessories = [];
         for (const id of HomePlusControlPlatform.Accessories) {
             this.log.info("Adding accessory with id " + id);
-            foundAccessories.push(new LightSwitch_1.LightSwitch(hap, this.log, HomePlusControlPlatform.Accessory[id], id, this.home_id, "00:03:50:a2:4a:7f", this.token));
+            foundAccessories.push(new DimmableLightSwitch_1.DimmableLightSwitch(hap, this.log, HomePlusControlPlatform.Accessory[id], id, this.home_id, "00:03:50:a2:4a:7f", this.token));
         }
         callback(foundAccessories);
         /*callback([

@@ -80,7 +80,8 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
                         if (module["type"] === "BNLD") {
                             HomePlusControlPlatform.Accessories.push(module["id"])
                             HomePlusControlPlatform.AccessoryName[module["id"]] = module["name"]
-                            LightSwitch.LightSwitchState[module["id"]] = module["on"]
+                            DimmableLightSwitch.LightBrightnessState[module["id"]] = module["brightness"]
+                            DimmableLightSwitch.LightSwitchState[module["id"]] = module["on"]
                         }
                     });
                 } else {
@@ -94,7 +95,7 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
         var foundAccessories: AccessoryPlugin[] = [];
         for (const id of HomePlusControlPlatform.Accessories) {
             this.log.info("Adding accessory with id " + id);
-            foundAccessories.push(new LightSwitch(hap, this.log, HomePlusControlPlatform.Accessory[id], id, this.home_id, "00:03:50:a2:4a:7f", this.token));
+            foundAccessories.push(new DimmableLightSwitch(hap, this.log, HomePlusControlPlatform.Accessory[id], id, this.home_id, "00:03:50:a2:4a:7f", this.token));
         }
         callback(foundAccessories);
         /*callback([

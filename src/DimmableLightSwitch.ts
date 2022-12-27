@@ -13,6 +13,8 @@ export class DimmableLightSwitch implements AccessoryPlugin {
 
     private readonly log: Logging;
 
+    public static LightBrightnessState: { [key: string]: number } = {};
+    public static LightSwitchState: { [key: string]: boolean } = {};
     private switchBrightness = 0;
     private id: string = "";
     private home_id: string = "";
@@ -37,12 +39,14 @@ export class DimmableLightSwitch implements AccessoryPlugin {
 
         this.switchService.getCharacteristic(hap.Characteristic.Brightness)
             .onGet(() => {
-                return this.switchBrightness;
+                return DimmableLightSwitch.LightSwitchState[this.id] ? DimmableLightSwitch.LightBrightnessState[this.id] : 0;
             })
             .onSet((value: CharacteristicValue) => {
                 this.switchBrightness = value as number;
                 log.info("Switch brightness was set to: " + this.switchBrightness);
                 this.setBrightness(this.switchBrightness);
+                DimmableLightSwitch.LightBrightnessState[this.id] = this.switchBrightness;
+                DimmableLightSwitch.LightSwitchState[this.id] = this.switchBrightness > 0;
             });
 
         this.informationService = new hap.Service.AccessoryInformation()
@@ -102,6 +106,7 @@ export class DimmableLightSwitch implements AccessoryPlugin {
                         {
                             id: this.id,
                             brightness: state,
+                            on: state > 0,
                             bridge: this.bridge
                         }]
                 }
