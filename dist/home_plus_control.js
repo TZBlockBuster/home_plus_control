@@ -64,6 +64,8 @@ class HomePlusControlPlatform {
         }
     }
     configureAccessory(accessory) {
+    }
+    configureAccessoryNew(accessory) {
         this.log("Configuring accessory %s", accessory.displayName);
         accessory.on("identify" /* PlatformAccessoryEvent.IDENTIFY */, () => {
             this.log("%s identified!", accessory.displayName);
@@ -77,9 +79,9 @@ class HomePlusControlPlatform {
             });
             callback();
         });
-        /* accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
-        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "Netatmo");
-        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, HomePlusControlPlatform.IDToIDLookup[accessory.UUID]);*/
+        accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
+        accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Manufacturer, "Netatmo");
+        accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.SerialNumber, HomePlusControlPlatform.IDToIDLookup[accessory.UUID]);
         this.homeAccessories.push(accessory);
     }
     async setState(id, state) {

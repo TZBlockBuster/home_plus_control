@@ -98,7 +98,10 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         }
     }
 
-    configureAccessory(accessory: PlatformAccessory): void {
+    configureAccessory(accessory: PlatformAccessory) {
+    }
+
+    configureAccessoryNew(accessory: PlatformAccessory): void {
 
         this.log("Configuring accessory %s", accessory.displayName);
 
@@ -117,9 +120,9 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                 callback();
             });
 
-        /* accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
+        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
         accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "Netatmo");
-        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, HomePlusControlPlatform.IDToIDLookup[accessory.UUID]);*/
+        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, HomePlusControlPlatform.IDToIDLookup[accessory.UUID]);
 
         this.homeAccessories.push(accessory);
     }
