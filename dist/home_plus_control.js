@@ -79,10 +79,14 @@ class HomePlusControlPlatform {
                 this.log("Set state: " + r);
             });
             callback();
+        })
+            .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
+            this.log.info("%s Light was get: " + HomePlusControlPlatform.LightSwitchState[accessory.UUID]);
+            callback(undefined, HomePlusControlPlatform.LightSwitchState[accessory.UUID]);
         });
-        accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
-        accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Manufacturer, "Netatmo");
-        accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.SerialNumber, HomePlusControlPlatform.IDToIDLookup[accessory.UUID]);
+        /*accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
+        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "Netatmo");
+        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, HomePlusControlPlatform.IDToIDLookup[accessory.UUID]);*/
         this.homeAccessories.push(accessory);
     }
     async setState(id, state) {

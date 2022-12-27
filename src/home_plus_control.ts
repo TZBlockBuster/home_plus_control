@@ -1,4 +1,4 @@
-import {API, Categories, CharacteristicEventTypes, CharacteristicSetCallback, CharacteristicValue, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformAccessoryEvent, PlatformConfig,} from "homebridge";
+import {API, Categories, CharacteristicEventTypes, CharacteristicGetCallback, CharacteristicSetCallback, CharacteristicValue, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformAccessoryEvent, PlatformConfig,} from "homebridge";
 
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
@@ -119,11 +119,15 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                     this.log("Set state: " + r);
                 });
                 callback();
+            })
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                this.log.info("%s Light was get: " + HomePlusControlPlatform.LightSwitchState[accessory.UUID]);
+                callback(undefined, HomePlusControlPlatform.LightSwitchState[accessory.UUID]);
             });
 
-        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
+        /*accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
         accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "Netatmo");
-        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, HomePlusControlPlatform.IDToIDLookup[accessory.UUID]);
+        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, HomePlusControlPlatform.IDToIDLookup[accessory.UUID]);*/
 
         this.homeAccessories.push(accessory);
     }
