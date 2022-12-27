@@ -68,7 +68,7 @@ class HomePlusControlPlatform {
         accessory.on("identify" /* PlatformAccessoryEvent.IDENTIFY */, () => {
             this.log("%s identified!", accessory.displayName);
         });
-        accessory.getService(hap.Service.Lightbulb).getCharacteristic(hap.Characteristic.On)
+        accessory.getService(hap.Service.Switch).getCharacteristic(hap.Characteristic.On)
             .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
             this.log.info("%s Light was set to: " + value);
             HomePlusControlPlatform.LightSwitchState[accessory.UUID] = value;

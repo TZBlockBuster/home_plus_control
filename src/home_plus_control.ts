@@ -107,7 +107,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         });
 
 
-        accessory.getService(hap.Service.Lightbulb)!.getCharacteristic(hap.Characteristic.On)
+        accessory.getService(hap.Service.Switch)!.getCharacteristic(hap.Characteristic.On)
             .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
                 this.log.info("%s Light was set to: " + value);
                 HomePlusControlPlatform.LightSwitchState[accessory.UUID] = value as boolean;
