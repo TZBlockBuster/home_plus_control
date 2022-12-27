@@ -72,12 +72,11 @@ class HomePlusControlPlatform {
             .onGet(() => {
             return HomePlusControlPlatform.LightSwitchState[accessory.UUID];
         })
-            .onSet((value, callback) => {
+            .onSet((value) => {
             HomePlusControlPlatform.LightSwitchState[accessory.UUID] = value;
             this.setState(HomePlusControlPlatform.IDToIDLookup[accessory.UUID], value).then(r => {
                 this.log.info("Set state of " + accessory.displayName + " to " + value);
             });
-            callback();
         });
         accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
         accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Manufacturer, "Netatmo");
@@ -108,9 +107,9 @@ class HomePlusControlPlatform {
     addAccessory(name, id) {
         this.log.info("Adding new accessory with name %s", name);
         const uuid = hap.uuid.generate(name);
-        const accessory = new Accessory(name, uuid, 5 /* Categories.LIGHTBULB */);
+        const accessory = new Accessory(name, uuid, 8 /* Categories.SWITCH */);
         HomePlusControlPlatform.IDToIDLookup[uuid] = id;
-        accessory.addService(hap.Service.Lightbulb, name);
+        accessory.addService(hap.Service.Switch, name);
         this.configureAccessory(accessory);
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
     }

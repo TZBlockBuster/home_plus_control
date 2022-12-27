@@ -111,12 +111,11 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
             .onGet(() => {
                 return HomePlusControlPlatform.LightSwitchState[accessory.UUID];
             })
-            .onSet((value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+            .onSet((value: CharacteristicValue) => {
                 HomePlusControlPlatform.LightSwitchState[accessory.UUID] = value as boolean;
                 this.setState(HomePlusControlPlatform.IDToIDLookup[accessory.UUID], value as boolean).then(r => {
                     this.log.info("Set state of " + accessory.displayName + " to " + value);
                 });
-                callback();
             });
 
         accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Home+ Control Light Switch");
@@ -152,11 +151,11 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         this.log.info("Adding new accessory with name %s", name);
 
         const uuid = hap.uuid.generate(name);
-        const accessory = new Accessory(name, uuid, Categories.LIGHTBULB);
+        const accessory = new Accessory(name, uuid, Categories.SWITCH);
 
         HomePlusControlPlatform.IDToIDLookup[uuid] = id;
 
-        accessory.addService(hap.Service.Lightbulb, name);
+        accessory.addService(hap.Service.Switch, name);
 
         this.configureAccessory(accessory);
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
