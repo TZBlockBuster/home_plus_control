@@ -1,4 +1,5 @@
 import {AccessoryPlugin, CharacteristicEventTypes, CharacteristicGetCallback, CharacteristicValue, HAP, HAPStatus, Logging, Service} from "homebridge";
+import {HomePlusControlCache} from "./HomePlusControlCache";
 
 export class DimmableLightSwitch implements AccessoryPlugin {
 

@@ -1,6 +1,4 @@
-
-
-class HomePlusControlCache {
+export class HomePlusControlCache {
 
     public static forceUpdate: boolean = false;
 
@@ -8,7 +6,7 @@ class HomePlusControlCache {
 
     private static lastUpdate: Date = new Date();
 
-     static async getHomeStatus(home_id: string, token: string): Promise<any> {
+    static async getHomeStatus(home_id: string, token: string): Promise<any> {
         if (HomePlusControlCache.result == null || HomePlusControlCache.forceUpdate || (new Date().getTime() - HomePlusControlCache.lastUpdate.getTime()) > 10000) {
             const request = fetch("https://api.netatmo.com/api/homestatus?home_id=" + home_id, {
                 method: "GET",

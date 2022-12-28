@@ -9,6 +9,8 @@ import {
     CharacteristicEventTypes, HAPStatus
 } from "homebridge";
 
+import {HomePlusControlCache} from "./HomePlusControlCache";
+
 export class WindowCovering implements AccessoryPlugin {
 
     private readonly log: Logging;

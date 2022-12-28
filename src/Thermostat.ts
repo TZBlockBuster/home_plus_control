@@ -8,6 +8,7 @@ import {
     Service,
     CharacteristicEventTypes, HAPStatus
 } from "homebridge";
+import {HomePlusControlCache} from "./HomePlusControlCache";
 
 export class Thermostat implements AccessoryPlugin {
 
