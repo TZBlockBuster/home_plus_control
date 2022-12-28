@@ -4,6 +4,7 @@ import {DimmableLightSwitch} from "./DimmableLightSwitch";
 import {WindowCovering} from "./WindowCovering";
 import {Fan} from "./Fan";
 import {HumiditySensor} from "./HumiditySensor";
+import {Thermostat} from "./Thermostat";
 
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
@@ -96,7 +97,7 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
         }
         for (const id of HomePlusControlPlatform.ThermostatList) {
             this.log.info("Adding humidity sensor with id " + id);
-            foundAccessories.push(new HumiditySensor(hap, this.log, HomePlusControlPlatform.Thermostats[id], id, this.home_id, "00:03:50:a2:4a:7f", this.token));
+            foundAccessories.push(new Thermostat(hap, this.log, HomePlusControlPlatform.Thermostats[id], id, this.home_id, "00:03:50:a2:4a:7f", this.token));
         }
         callback(foundAccessories);
     }

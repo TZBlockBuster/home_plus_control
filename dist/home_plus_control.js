@@ -2,7 +2,7 @@
 const DimmableLightSwitch_1 = require("./DimmableLightSwitch");
 const WindowCovering_1 = require("./WindowCovering");
 const Fan_1 = require("./Fan");
-const HumiditySensor_1 = require("./HumiditySensor");
+const Thermostat_1 = require("./Thermostat");
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
 let hap;
@@ -54,7 +54,7 @@ class HomePlusControlPlatform {
         }
         for (const id of HomePlusControlPlatform.ThermostatList) {
             this.log.info("Adding humidity sensor with id " + id);
-            foundAccessories.push(new HumiditySensor_1.HumiditySensor(hap, this.log, HomePlusControlPlatform.Thermostats[id], id, this.home_id, "00:03:50:a2:4a:7f", this.token));
+            foundAccessories.push(new Thermostat_1.Thermostat(hap, this.log, HomePlusControlPlatform.Thermostats[id], id, this.home_id, "00:03:50:a2:4a:7f", this.token));
         }
         callback(foundAccessories);
     }
