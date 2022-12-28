@@ -125,14 +125,7 @@ export class DimmableLightSwitch implements AccessoryPlugin {
     }
 
     async getState(): Promise<any> {
-        const response = await fetch('https://api.netatmo.com/api/homestatus?home_id=' + this.home_id, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + this.token
-            }
-        });
-        const data = await response.json();
+        const data = await HomePlusControlCache.getHomeStatus(this.home_id, this.token);
         const module = data.body.home.modules.find((module: any) => module.id === this.id);
         return {
             brightness: module.brightness,
