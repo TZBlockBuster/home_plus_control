@@ -104,6 +104,7 @@ export class DimmableLightSwitch implements AccessoryPlugin {
     }
 
     async setStateBool(on: boolean) {
+        HomePlusControlCache.forceUpdate = true;
         const response = await fetch('https://api.netatmo.com/api/setstate', {
             method: 'POST',
             body: JSON.stringify({

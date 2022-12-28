@@ -92,6 +92,7 @@ export class WindowCovering implements AccessoryPlugin {
     }
 
     async setState(state: number) {
+        HomePlusControlCache.forceUpdate = true;
         const response = await fetch('https://api.netatmo.com/api/setstate', {
             method: 'POST',
             body: JSON.stringify({
