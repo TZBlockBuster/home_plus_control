@@ -2,6 +2,7 @@ import {AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin
 import {LightSwitch} from "./LightSwitch";
 import {DimmableLightSwitch} from "./DimmableLightSwitch";
 import {WindowCovering} from "./WindowCovering";
+import {Fan} from "./Fan";
 
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
@@ -24,10 +25,12 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
         "a24a7f-2c10-f0592c432712": "Bett Links"
     }
     public static WindowCovers: { [key: string]: string } = {}
+    public static Fans: { [key: string]: string } = {}
 
 
     public static Accessories: string[] = []
     public static WindowCoverList: string[] = []
+    public static FanList: string[] = []
 
 
     public static AccessoryName: { [key: string]: string } = {};
@@ -46,6 +49,7 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
         this.token = config["token"];
         HomePlusControlPlatform.Accessory = config["accessories"];
         HomePlusControlPlatform.WindowCovers = config["window_covers"];
+        HomePlusControlPlatform.Fans = config["fans"];
 
         for (const id in HomePlusControlPlatform.Accessory) {
             log.info("Adding accessory with id " + id + " and name " + HomePlusControlPlatform.Accessory[id]);
@@ -57,7 +61,12 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
             HomePlusControlPlatform.WindowCoverList.push(id);
         }
 
-        this.loadAccessories();
+        for (const id in HomePlusControlPlatform.Fans) {
+            log.info("Adding fan with id " + id + " and name " + HomePlusControlPlatform.Fans[id]);
+            HomePlusControlPlatform.FanList.push(id);
+        }
+
+        //this.loadAccessories();
 
         // get json using a http request
 
@@ -110,11 +119,10 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
             this.log.info("Adding window cover with id " + id);
             foundAccessories.push(new WindowCovering(hap, this.log, HomePlusControlPlatform.WindowCovers[id], id, this.home_id, "00:03:50:a2:4a:7f", this.token));
         }
+        for (const id of HomePlusControlPlatform.FanList) {
+            this.log.info("Adding fan with id " + id);
+            foundAccessories.push(new Fan(hap, this.log, HomePlusControlPlatform.Fans[id], id, this.home_id, "00:03:50:a2:4a:7f", this.token));
+        }
         callback(foundAccessories);
-        /*callback([
-            new LightSwitch(hap, this.log, "Bett Rechts", "a24a7f-2b10-f0592c453f2c", this.home_id, "00:03:50:a2:4a:7f", this.token),
-            new LightSwitch(hap, this.log, "Bett Links", "a24a7f-2c10-f0592c432712", this.home_id, "00:03:50:a2:4a:7f", this.token),
-            new DimmableLightSwitch(hap, this.log, "Wand", "a24a7f-0c10-f0592c1a45ba", this.home_id, "00:03:50:a2:4a:7f", this.token)
-        ]);*/
     }
 }
