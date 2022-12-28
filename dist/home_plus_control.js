@@ -2,6 +2,7 @@
 const DimmableLightSwitch_1 = require("./DimmableLightSwitch");
 const WindowCovering_1 = require("./WindowCovering");
 const Fan_1 = require("./Fan");
+const HumiditySensor_1 = require("./HumiditySensor");
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
 let hap;
@@ -17,6 +18,7 @@ class HomePlusControlPlatform {
         HomePlusControlPlatform.Accessory = config["accessories"];
         HomePlusControlPlatform.WindowCovers = config["window_covers"];
         HomePlusControlPlatform.Fans = config["fans"];
+        HomePlusControlPlatform.HumiditySensors = config["humidity_sensors"];
         for (const id in HomePlusControlPlatform.Accessory) {
             log.info("Adding accessory with id " + id + " and name " + HomePlusControlPlatform.Accessory[id]);
             HomePlusControlPlatform.Accessories.push(id);
@@ -29,45 +31,12 @@ class HomePlusControlPlatform {
             log.info("Adding fan with id " + id + " and name " + HomePlusControlPlatform.Fans[id]);
             HomePlusControlPlatform.FanList.push(id);
         }
-        //this.loadAccessories();
+        for (const id in HomePlusControlPlatform.HumiditySensors) {
+            log.info("Adding humidity sensor with id " + id + " and name " + HomePlusControlPlatform.HumiditySensors[id]);
+            HomePlusControlPlatform.HumiditySensorList.push(id);
+        }
         // get json using a http request
         log.info("Home + Control finished initializing!");
-    }
-    loadAccessories() {
-        this.log.info("Loading accessories...");
-        this.loadAsyncAccessories().then(() => {
-            this.log.info("Loaded Data: " + DimmableLightSwitch_1.DimmableLightSwitch.LightBrightnessState.toString());
-        });
-    }
-    async loadAsyncAccessories() {
-        const response = await fetch('https://api.netatmo.com/api/homestatus?home_id=' + this.home_id, {
-            method: 'GET',
-            headers: {
-                'accept': 'application/json',
-                'Authorization': 'Bearer ' + this.token
-            }
-        });
-        const data = await response.json();
-        this.log.info("Got data: " + JSON.stringify(data));
-        if (data["error"] != null) {
-            this.log.error("Error: " + data["error"]["message"]);
-        }
-        else if (data["body"]["homes"] != null) {
-            data["body"]["homes"].forEach((home) => {
-                if (home["modules"] != null) {
-                    home["modules"].forEach((module) => {
-                        if (module["type"] === "BNLD") {
-                            HomePlusControlPlatform.AccessoryName[module["id"]] = module["name"];
-                            DimmableLightSwitch_1.DimmableLightSwitch.LightBrightnessState[module["id"]] = module["brightness"];
-                            DimmableLightSwitch_1.DimmableLightSwitch.LightSwitchState[module["id"]] = module["on"];
-                        }
-                    });
-                }
-                else {
-                    this.log.error("No modules found for home " + home["name"]);
-                }
-            });
-        }
     }
     accessories(callback) {
         var foundAccessories = [];
@@ -83,6 +52,10 @@ class HomePlusControlPlatform {
             this.log.info("Adding fan with id " + id);
             foundAccessories.push(new Fan_1.Fan(hap, this.log, HomePlusControlPlatform.Fans[id], id, this.home_id, "00:03:50:a2:4a:7f", this.token));
         }
+        for (const id of HomePlusControlPlatform.HumiditySensorList) {
+            this.log.info("Adding humidity sensor with id " + id);
+            foundAccessories.push(new HumiditySensor_1.HumiditySensor(hap, this.log, HomePlusControlPlatform.HumiditySensors[id], id, this.home_id, "00:03:50:a2:4a:7f", this.token));
+        }
         callback(foundAccessories);
     }
 }
@@ -92,9 +65,11 @@ HomePlusControlPlatform.Accessory = {
 };
 HomePlusControlPlatform.WindowCovers = {};
 HomePlusControlPlatform.Fans = {};
+HomePlusControlPlatform.HumiditySensors = {};
 HomePlusControlPlatform.Accessories = [];
 HomePlusControlPlatform.WindowCoverList = [];
 HomePlusControlPlatform.FanList = [];
+HomePlusControlPlatform.HumiditySensorList = [];
 HomePlusControlPlatform.AccessoryName = {};
 module.exports = (api) => {
     hap = api.hap;
