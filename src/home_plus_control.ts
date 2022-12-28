@@ -1,10 +1,9 @@
 import {AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin,} from "homebridge";
-import {LightSwitch} from "./LightSwitch";
 import {DimmableLightSwitch} from "./DimmableLightSwitch";
 import {WindowCovering} from "./WindowCovering";
 import {Fan} from "./Fan";
-import {HumiditySensor} from "./HumiditySensor";
 import {Thermostat} from "./Thermostat";
+import {AuthManager} from "./AuthManager";
 
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
@@ -14,7 +13,7 @@ let hap: HAP;
 export = (api: API) => {
     hap = api.hap;
 
-    api.registerPlatform(PLATFORM_NAME, HomePlusControlPlatform);
+    api.registerPlatform(PLUGIN_NAME, PLATFORM_NAME, HomePlusControlPlatform);
 };
 
 class HomePlusControlPlatform implements StaticPlatformPlugin {
@@ -22,10 +21,7 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
 
     private readonly log: Logging;
 
-    public static Accessory: { [key: string]: string } = {
-        "a24a7f-2b10-f0592c453f2c": "Bett Rechts",
-        "a24a7f-2c10-f0592c432712": "Bett Links"
-    }
+    public static Accessory: { [key: string]: string } = {}
     public static WindowCovers: { [key: string]: string } = {}
     public static Fans: { [key: string]: string } = {}
     public static Thermostats: { [key: string]: string } = {}
@@ -35,9 +31,6 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
     public static WindowCoverList: string[] = []
     public static FanList: string[] = []
     public static ThermostatList: string[] = []
-
-
-    public static AccessoryName: { [key: string]: string } = {};
 
     private home_id: string = "";
     private token: string = "";
@@ -51,29 +44,33 @@ class HomePlusControlPlatform implements StaticPlatformPlugin {
 
         this.home_id = config["home_id"];
         this.token = config["token"];
-        HomePlusControlPlatform.Accessory = config["accessories"];
-        HomePlusControlPlatform.WindowCovers = config["window_covers"];
-        HomePlusControlPlatform.Fans = config["fans"];
-        HomePlusControlPlatform.Thermostats = config["thermostats"];
+        if (this.token == undefined) {
+            AuthManager.sendAuthRequestURL(log, config["client_id"], config["client_secret"], config["hostname"]);
+        } else {
+            HomePlusControlPlatform.Accessory = config["accessories"];
+            HomePlusControlPlatform.WindowCovers = config["window_covers"];
+            HomePlusControlPlatform.Fans = config["fans"];
+            HomePlusControlPlatform.Thermostats = config["thermostats"];
 
-        for (const id in HomePlusControlPlatform.Accessory) {
-            log.info("Adding accessory with id " + id + " and name " + HomePlusControlPlatform.Accessory[id]);
-            HomePlusControlPlatform.Accessories.push(id);
-        }
+            for (const id in HomePlusControlPlatform.Accessory) {
+                log.info("Adding accessory with id " + id + " and name " + HomePlusControlPlatform.Accessory[id]);
+                HomePlusControlPlatform.Accessories.push(id);
+            }
 
-        for (const id in HomePlusControlPlatform.WindowCovers) {
-            log.info("Adding window cover with id " + id + " and name " + HomePlusControlPlatform.WindowCovers[id]);
-            HomePlusControlPlatform.WindowCoverList.push(id);
-        }
+            for (const id in HomePlusControlPlatform.WindowCovers) {
+                log.info("Adding window cover with id " + id + " and name " + HomePlusControlPlatform.WindowCovers[id]);
+                HomePlusControlPlatform.WindowCoverList.push(id);
+            }
 
-        for (const id in HomePlusControlPlatform.Fans) {
-            log.info("Adding fan with id " + id + " and name " + HomePlusControlPlatform.Fans[id]);
-            HomePlusControlPlatform.FanList.push(id);
-        }
+            for (const id in HomePlusControlPlatform.Fans) {
+                log.info("Adding fan with id " + id + " and name " + HomePlusControlPlatform.Fans[id]);
+                HomePlusControlPlatform.FanList.push(id);
+            }
 
-        for (const id in HomePlusControlPlatform.Thermostats) {
-            log.info("Adding humidity sensor with id " + id + " and name " + HomePlusControlPlatform.Thermostats[id]);
-            HomePlusControlPlatform.ThermostatList.push(id);
+            for (const id in HomePlusControlPlatform.Thermostats) {
+                log.info("Adding humidity sensor with id " + id + " and name " + HomePlusControlPlatform.Thermostats[id]);
+                HomePlusControlPlatform.ThermostatList.push(id);
+            }
         }
 
         // get json using a http request
