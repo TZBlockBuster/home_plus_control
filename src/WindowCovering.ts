@@ -47,8 +47,9 @@ export class WindowCovering implements AccessoryPlugin {
         this.switchService.getCharacteristic(hap.Characteristic.TargetPosition)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 this.getState().then((state) => {
-                    this.log.info("Successfully get target position: " + state.target_position);
-                    callback(HAPStatus.SUCCESS, state.target_position);
+                    const target_position = state.target_position == 50 ? state.current_position : state.target_position;
+                    this.log.info("Successfully get target position: " + target_position);
+                    callback(HAPStatus.SUCCESS, target_position);
                 });
             })
             .onSet((value: CharacteristicValue) => {
