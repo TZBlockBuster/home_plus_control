@@ -44,8 +44,8 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                         const accessory = new Accessory(device["name"], uuid);
                         if (device["type"] == "BNLD") {
                             accessory.category = hap.Categories.LIGHTBULB;
+                            accessory.addService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
                             accessory.addService(hap.Service.Lightbulb, device["name"]);
-                            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
                             this.configureAccessory(accessory);
 
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -94,7 +94,8 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
 
     async requestState(accessory: PlatformAccessory, characteristic: RequestCharacteristic): Promise<any> {
-        const response = await fetch("http://192.168.1.96:8000/netatmo/" + this.home_id + "/state/" + accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber) +"/", {
+        const serialNumber = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber)!.value;
+        const response = await fetch("http://192.168.1.96:8000/netatmo/" + this.home_id + "/state/" + serialNumber + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
