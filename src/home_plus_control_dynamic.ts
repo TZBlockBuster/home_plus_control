@@ -40,7 +40,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
             this.requestDeviceList().then((data) => {
                 for (const device of data) {
                     const uuid = hap.uuid.generate(device["id"] + device["name"]);
-                    if (this.accessories.find(accessory => accessory.UUID === uuid) == undefined) {
+                    if (this.accessories.find(accessory => accessory.UUID == uuid) == undefined) {
                         const accessory = new Accessory(device["name"], uuid);
                         if (device["type"] == "BNLD") {
                             accessory.category = hap.Categories.LIGHTBULB;
@@ -56,6 +56,8 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                             accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
                             accessory.addService(hap.Service.Switch, device["name"]);
                             this.configureAccessory(accessory);
+
+                            this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
                         }
                     } else {
                         this.log.info("Accessory already registered: " + device["name"]);

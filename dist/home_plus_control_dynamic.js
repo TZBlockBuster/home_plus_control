@@ -17,7 +17,7 @@ class HomePlusControlPlatform {
             this.requestDeviceList().then((data) => {
                 for (const device of data) {
                     const uuid = hap.uuid.generate(device["id"] + device["name"]);
-                    if (this.accessories.find(accessory => accessory.UUID === uuid) == undefined) {
+                    if (this.accessories.find(accessory => accessory.UUID == uuid) == undefined) {
                         const accessory = new Accessory(device["name"], uuid);
                         if (device["type"] == "BNLD") {
                             accessory.category = 5 /* hap.Categories.LIGHTBULB */;
@@ -33,6 +33,7 @@ class HomePlusControlPlatform {
                             accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
                             accessory.addService(hap.Service.Switch, device["name"]);
                             this.configureAccessory(accessory);
+                            this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
                         }
                     }
                     else {
