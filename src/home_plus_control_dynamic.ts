@@ -50,6 +50,8 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
                         }
+                    } else {
+                        this.log.info("Accessory already registered: " + device["name"]);
                     }
                 }
             });
