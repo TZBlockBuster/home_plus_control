@@ -101,17 +101,37 @@ class HomePlusControlPlatform {
                 return isAvailable ? data["brightness"] : 0;
         }
     }
+    async setState(accessory, characteristic, value) {
+        const serialNumber = accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.SerialNumber).value;
+        const response = await fetch("http://192.168.1.96:8000/netatmo/" + this.home_id + "/setstate/" + serialNumber + "/" + characteristic.toString() + "/" + value.toString() + "/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        return (await response.json())["status"] == "ok";
+    }
     configureLightbulb(accessory) {
         accessory.getService(hap.Service.Lightbulb).getCharacteristic(hap.Characteristic.On)
             .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
             this.requestState(accessory, RequestCharacteristic.On).then((value) => {
                 callback(null, value);
             });
+        })
+            .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
+            this.setState(accessory, RequestCharacteristic.On, value).then((success) => {
+                callback(null);
+            });
         });
         accessory.getService(hap.Service.Lightbulb).getCharacteristic(hap.Characteristic.Brightness)
             .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
             this.requestState(accessory, RequestCharacteristic.Brightness).then((value) => {
                 callback(null, value);
+            });
+        })
+            .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
+            this.setState(accessory, RequestCharacteristic.Brightness, value).then((success) => {
+                callback(null);
             });
         });
         accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios");
@@ -122,6 +142,11 @@ class HomePlusControlPlatform {
             .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
             this.requestState(accessory, RequestCharacteristic.On).then((value) => {
                 callback(null, value);
+            });
+        })
+            .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
+            this.setState(accessory, RequestCharacteristic.On, value).then((success) => {
+                callback(null);
             });
         });
         accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios");

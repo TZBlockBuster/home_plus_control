@@ -1,4 +1,4 @@
-import {API, APIEvent, Characteristic, CharacteristicEventTypes, CharacteristicGetCallback, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformConfig, Service} from "homebridge";
+import {API, APIEvent, Characteristic, CharacteristicEventTypes, CharacteristicGetCallback, CharacteristicSetCallback, CharacteristicValue, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformConfig, Service} from "homebridge";
 
 
 const PLATFORM_NAME = "homebridge-home_plus_control";
@@ -130,11 +130,27 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         }
     }
 
+    async setState(accessory: PlatformAccessory, characteristic: RequestCharacteristic, value: any): Promise<any> {
+        const serialNumber = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber)!.value;
+        const response = await fetch("http://192.168.1.96:8000/netatmo/" + this.home_id + "/setstate/" + serialNumber + "/" + characteristic.toString() + "/" + value.toString() + "/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        return (await response.json())["status"] == "ok";
+    }
+
     configureLightbulb(accessory: PlatformAccessory) {
         accessory.getService(hap.Service.Lightbulb)!.getCharacteristic(hap.Characteristic.On)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 this.requestState(accessory, RequestCharacteristic.On).then((value) => {
                     callback(null, value);
+                });
+            })
+            .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+                this.setState(accessory, RequestCharacteristic.On, value).then((success) => {
+                    callback(null);
                 });
             });
 
@@ -142,6 +158,11 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 this.requestState(accessory, RequestCharacteristic.Brightness).then((value) => {
                     callback(null, value);
+                });
+            })
+            .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+                this.setState(accessory, RequestCharacteristic.Brightness, value).then((success) => {
+                    callback(null);
                 });
             });
 
@@ -155,6 +176,11 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 this.requestState(accessory, RequestCharacteristic.On).then((value) => {
                     callback(null, value);
+                });
+            })
+            .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+                this.setState(accessory, RequestCharacteristic.On, value).then((success) => {
+                    callback(null);
                 });
             });
 
