@@ -55,7 +55,7 @@ class HomePlusControlPlatform {
         }
     }
     async requestDeviceList() {
-        const response = await fetch("192.168.1.96:8000/netatmo/" + this.home_id + "/devices/", {
+        const response = await fetch("http://192.168.1.96:8000/netatmo/" + this.home_id + "/devices/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -64,7 +64,7 @@ class HomePlusControlPlatform {
         return await response.json();
     }
     async requestState(accessory, characteristic) {
-        const response = await fetch("192.168.1.96:8000/netatmo/" + this.home_id + "/state/" + accessory.UUID + "/", {
+        const response = await fetch("http://192.168.1.96:8000/netatmo/" + this.home_id + "/state/" + accessory.UUID + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"

@@ -82,7 +82,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     }
 
     async requestDeviceList(): Promise<any> {
-        const response = await fetch("192.168.1.96:8000/netatmo/" + this.home_id + "/devices/", {
+        const response = await fetch("http://192.168.1.96:8000/netatmo/" + this.home_id + "/devices/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -93,7 +93,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
 
     async requestState(accessory: PlatformAccessory, characteristic: RequestCharacteristic): Promise<any> {
-        const response = await fetch("192.168.1.96:8000/netatmo/" + this.home_id + "/state/" + accessory.UUID +"/", {
+        const response = await fetch("http://192.168.1.96:8000/netatmo/" + this.home_id + "/state/" + accessory.UUID +"/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
