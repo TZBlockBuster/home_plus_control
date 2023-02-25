@@ -42,6 +42,9 @@ class HomePlusControlPlatform {
     }
     configureAccessory(accessory) {
         this.log.info("Home + Control configureAccessory", accessory.displayName);
+        if (this.accessories.find(accessory => accessory.displayName === accessory.displayName) != undefined) {
+            accessory.displayName = accessory.displayName + " (2)";
+        }
         // check which type of accessory it is
         switch (accessory.category) {
             case 5 /* hap.Categories.LIGHTBULB */:

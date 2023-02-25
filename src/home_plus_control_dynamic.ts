@@ -66,6 +66,9 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     configureAccessory(accessory: PlatformAccessory) {
         this.log.info("Home + Control configureAccessory", accessory.displayName);
 
+        if (this.accessories.find(accessory => accessory.displayName === accessory.displayName) != undefined) {
+            accessory.displayName = accessory.displayName + " (2)";
+        }
         // check which type of accessory it is
         switch (accessory.category) {
             case hap.Categories.LIGHTBULB:
