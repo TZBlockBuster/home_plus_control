@@ -49,31 +49,25 @@ class HomePlusControlPlatform {
     configureAccessory(accessory) {
         this.log.info("Home + Control configureAccessory", accessory.displayName);
         let serialNumber = accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.SerialNumber).value;
+        let model = accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.Model).value;
         if (this.alreadyRegistered.find(id => id == serialNumber) == undefined) {
             if (typeof serialNumber === "string") {
+                switch (model) {
+                    case "Netatmo BNLD":
+                        this.configureLightbulb(accessory);
+                        break;
+                    case "Netatmo BNIL":
+                        this.configureSwitch(accessory);
+                        break;
+                    default:
+                        this.log.error("Unknown accessory type: " + accessory.category);
+                        break;
+                }
                 this.alreadyRegistered.push(serialNumber);
             }
         }
-        // check which type of accessory it is
-        switch (accessory.category) {
-            case 5 /* hap.Categories.LIGHTBULB */:
-                this.configureLightbulb(accessory);
-                break;
-            case 8 /* hap.Categories.SWITCH */:
-                this.configureSwitch(accessory);
-                break;
-            case 9 /* hap.Categories.THERMOSTAT */:
-                this.configureThermostat(accessory);
-                break;
-            case 14 /* hap.Categories.WINDOW_COVERING */:
-                this.configureWindowCovering(accessory);
-                break;
-            case 3 /* hap.Categories.FAN */:
-                this.configureFan(accessory);
-                break;
-            default:
-                this.log.error("Unknown accessory type: " + accessory.category);
-                break;
+        else {
+            this.log.info("Accessory already registered: " + accessory.displayName);
         }
     }
     async requestDeviceList() {
