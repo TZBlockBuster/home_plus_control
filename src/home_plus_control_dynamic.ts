@@ -49,6 +49,11 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                             this.configureAccessory(accessory);
 
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+                        } else if (device["type"] == "BNIL") {
+                            accessory.category = hap.Categories.SWITCH;
+                            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
+                            accessory.addService(hap.Service.Switch, device["name"]);
+                            this.configureAccessory(accessory);
                         }
                     } else {
                         this.log.info("Accessory already registered: " + device["name"]);
