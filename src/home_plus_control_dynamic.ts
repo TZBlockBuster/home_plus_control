@@ -44,7 +44,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                         const accessory = new Accessory(device["name"], uuid);
                         if (device["type"] == "BNLD") {
                             accessory.category = hap.Categories.LIGHTBULB;
-                            accessory.addService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
+                            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
                             accessory.addService(hap.Service.Lightbulb, device["name"]);
                             this.configureAccessory(accessory);
 
