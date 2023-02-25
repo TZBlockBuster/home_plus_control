@@ -110,6 +110,22 @@ class HomePlusControlPlatform {
         return (await response.json())["status"] == "ok";
     }
     configureLightbulb(accessory) {
+        accessory.on("identify" /* PlatformAccessoryEvent.IDENTIFY */, () => {
+            const state = accessory.getService(hap.Service.Lightbulb).getCharacteristic(hap.Characteristic.On).value;
+            const brightness = accessory.getService(hap.Service.Lightbulb).getCharacteristic(hap.Characteristic.Brightness).value;
+            this.log.info("Home + Control identify", accessory.displayName);
+            this.setState(accessory, RequestCharacteristic.On, true).then((success) => {
+                this.setState(accessory, RequestCharacteristic.Brightness, 100).then((success) => {
+                    setTimeout(() => {
+                        this.setState(accessory, RequestCharacteristic.On, false).then((success) => {
+                            this.setState(accessory, RequestCharacteristic.Brightness, brightness).then((success) => {
+                                this.log.info("Home + Control identify done", accessory.displayName);
+                            });
+                        });
+                    }, 1000);
+                });
+            });
+        });
         accessory.getService(hap.Service.Lightbulb).getCharacteristic(hap.Characteristic.On)
             .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
             this.requestState(accessory, RequestCharacteristic.On).then((value) => {
@@ -136,6 +152,17 @@ class HomePlusControlPlatform {
         this.accessories.push(accessory);
     }
     configureSwitch(accessory) {
+        accessory.on("identify" /* PlatformAccessoryEvent.IDENTIFY */, () => {
+            const state = accessory.getService(hap.Service.Switch).getCharacteristic(hap.Characteristic.On).value;
+            this.log.info("Home + Control identify", accessory.displayName);
+            this.setState(accessory, RequestCharacteristic.On, !state).then((success) => {
+                setTimeout(() => {
+                    this.setState(accessory, RequestCharacteristic.On, state).then((success) => {
+                        this.log.info("Home + Control identify done", accessory.displayName);
+                    });
+                }, 1000);
+            });
+        });
         accessory.getService(hap.Service.Switch).getCharacteristic(hap.Characteristic.On)
             .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
             this.requestState(accessory, RequestCharacteristic.On).then((value) => {

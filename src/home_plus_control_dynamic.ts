@@ -1,4 +1,4 @@
-import {API, APIEvent, Characteristic, CharacteristicEventTypes, CharacteristicGetCallback, CharacteristicSetCallback, CharacteristicValue, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformConfig, Service} from "homebridge";
+import {API, APIEvent, Characteristic, CharacteristicEventTypes, CharacteristicGetCallback, CharacteristicSetCallback, CharacteristicValue, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformAccessoryEvent, PlatformConfig, Service} from "homebridge";
 
 
 const PLATFORM_NAME = "homebridge-home_plus_control";
@@ -141,6 +141,24 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     }
 
     configureLightbulb(accessory: PlatformAccessory) {
+
+        accessory.on(PlatformAccessoryEvent.IDENTIFY, () => {
+            const state = accessory.getService(hap.Service.Lightbulb)!.getCharacteristic(hap.Characteristic.On).value;
+            const brightness = accessory.getService(hap.Service.Lightbulb)!.getCharacteristic(hap.Characteristic.Brightness).value;
+            this.log.info("Home + Control identify", accessory.displayName);
+            this.setState(accessory, RequestCharacteristic.On, true).then((success) => {
+                this.setState(accessory, RequestCharacteristic.Brightness, 100).then((success) => {
+                    setTimeout(() => {
+                        this.setState(accessory, RequestCharacteristic.On, false).then((success) => {
+                            this.setState(accessory, RequestCharacteristic.Brightness, brightness).then((success) => {
+                                this.log.info("Home + Control identify done", accessory.displayName);
+                            });
+                        });
+                    }, 1000);
+                });
+            });
+        });
+
         accessory.getService(hap.Service.Lightbulb)!.getCharacteristic(hap.Characteristic.On)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 this.requestState(accessory, RequestCharacteristic.On).then((value) => {
@@ -171,6 +189,19 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     }
 
     configureSwitch(accessory: PlatformAccessory) {
+
+        accessory.on(PlatformAccessoryEvent.IDENTIFY, () => {
+            const state = accessory.getService(hap.Service.Switch)!.getCharacteristic(hap.Characteristic.On).value;
+            this.log.info("Home + Control identify", accessory.displayName);
+            this.setState(accessory, RequestCharacteristic.On, !state).then((success) => {
+                setTimeout(() => {
+                    this.setState(accessory, RequestCharacteristic.On, state).then((success) => {
+                        this.log.info("Home + Control identify done", accessory.displayName);
+                    });
+                }, 1000);
+            });
+        });
+
         accessory.getService(hap.Service.Switch)!.getCharacteristic(hap.Characteristic.On)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 this.requestState(accessory, RequestCharacteristic.On).then((value) => {
