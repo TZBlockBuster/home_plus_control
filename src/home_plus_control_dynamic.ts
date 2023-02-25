@@ -1,4 +1,4 @@
-import {API, APIEvent, CharacteristicEventTypes, CharacteristicGetCallback, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformConfig} from "homebridge";
+import {API, APIEvent, Characteristic, CharacteristicEventTypes, CharacteristicGetCallback, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformConfig, Service} from "homebridge";
 
 
 const PLATFORM_NAME = "homebridge-home_plus_control";
@@ -39,12 +39,13 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
             this.requestDeviceList().then((data) => {
                 for (const device of data) {
-                    const uuid = device["id"];
+                    const uuid = hap.uuid.generate(device["id"]);
                     if (this.accessories.find(accessory => accessory.UUID === uuid) == undefined) {
                         const accessory = new Accessory(device["name"], uuid);
                         if (device["type"] == "BNLD") {
                             accessory.category = hap.Categories.LIGHTBULB;
                             accessory.addService(hap.Service.Lightbulb, device["name"]);
+                            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
                             this.configureAccessory(accessory);
 
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -93,7 +94,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
 
     async requestState(accessory: PlatformAccessory, characteristic: RequestCharacteristic): Promise<any> {
-        const response = await fetch("http://192.168.1.96:8000/netatmo/" + this.home_id + "/state/" + accessory.UUID +"/", {
+        const response = await fetch("http://192.168.1.96:8000/netatmo/" + this.home_id + "/state/" + accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber) +"/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -129,7 +130,6 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
         accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios")
         accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Netatmo")
-        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, accessory.UUID)
 
         this.accessories.push(accessory)
     }
@@ -144,7 +144,6 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
         accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios")
         accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Netatmo")
-        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, accessory.UUID)
 
         this.accessories.push(accessory)
     }
