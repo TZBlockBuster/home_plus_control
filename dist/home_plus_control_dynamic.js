@@ -17,7 +17,7 @@ class HomePlusControlPlatform {
             this.requestDeviceList().then((data) => {
                 for (const device of data) {
                     const uuid = hap.uuid.generate(device["id"] + device["name"]);
-                    if (this.accessories.find(accessory => accessory.UUID == uuid) == undefined) {
+                    if (this.accessories.find(accessory => accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.SerialNumber).value == device["id"]) == undefined) {
                         const accessory = new Accessory(device["name"], uuid);
                         if (device["type"] == "BNLD") {
                             accessory.category = 5 /* hap.Categories.LIGHTBULB */;
