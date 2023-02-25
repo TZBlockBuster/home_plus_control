@@ -60,7 +60,7 @@ export class AuthManager {
                 client_secret: client_secret,
                 code: this.authCode,
                 redirect_uri: "http://" + hostname + ":18499/callback",
-                scope: "read_bticino write_bticino"
+                scope: "read_smarther write_smarther"
             }),
             headers: {
                 "Content-Type": "application/json"
