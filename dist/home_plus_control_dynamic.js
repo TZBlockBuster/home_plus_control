@@ -22,6 +22,7 @@ class HomePlusControlPlatform {
                         if (device["type"] == "BNLD") {
                             accessory.category = 5 /* hap.Categories.LIGHTBULB */;
                             accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
+                            accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
                             accessory.addService(hap.Service.Lightbulb, device["name"]);
                             this.configureAccessory(accessory);
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -29,6 +30,7 @@ class HomePlusControlPlatform {
                         else if (device["type"] == "BNIL") {
                             accessory.category = 8 /* hap.Categories.SWITCH */;
                             accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
+                            accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
                             accessory.addService(hap.Service.Switch, device["name"]);
                             this.configureAccessory(accessory);
                         }
@@ -110,7 +112,6 @@ class HomePlusControlPlatform {
             });
         });
         accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios");
-        accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Netatmo");
         this.accessories.push(accessory);
     }
     configureSwitch(accessory) {
@@ -121,7 +122,6 @@ class HomePlusControlPlatform {
             });
         });
         accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios");
-        accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Netatmo");
         this.accessories.push(accessory);
     }
     configureThermostat(accessory) {

@@ -45,6 +45,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                         if (device["type"] == "BNLD") {
                             accessory.category = hap.Categories.LIGHTBULB;
                             accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
+                            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
                             accessory.addService(hap.Service.Lightbulb, device["name"]);
                             this.configureAccessory(accessory);
 
@@ -52,6 +53,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                         } else if (device["type"] == "BNIL") {
                             accessory.category = hap.Categories.SWITCH;
                             accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
+                            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
                             accessory.addService(hap.Service.Switch, device["name"]);
                             this.configureAccessory(accessory);
                         }
@@ -140,7 +142,6 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
             });
 
         accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios")
-        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Netatmo")
 
         this.accessories.push(accessory)
     }
@@ -154,7 +155,6 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
             });
 
         accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios")
-        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Netatmo")
 
         this.accessories.push(accessory)
     }
