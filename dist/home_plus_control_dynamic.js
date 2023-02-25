@@ -7,6 +7,7 @@ class HomePlusControlPlatform {
     constructor(log, config, api) {
         this.home_id = "";
         this.accessories = [];
+        this.alreadyRegistered = [];
         this.log = log;
         this.api = api;
         // probably parse config or something here
@@ -17,7 +18,7 @@ class HomePlusControlPlatform {
             this.requestDeviceList().then((data) => {
                 for (const device of data) {
                     const uuid = hap.uuid.generate(device["id"] + device["name"]);
-                    if (this.accessories.find(accessory => accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.SerialNumber).value == device["id"]) == undefined) {
+                    if (this.alreadyRegistered.find(id => id == device["id"]) == undefined) {
                         const accessory = new Accessory(device["name"], uuid);
                         if (device["type"] == "BNLD") {
                             accessory.category = 5 /* hap.Categories.LIGHTBULB */;
@@ -47,8 +48,11 @@ class HomePlusControlPlatform {
     }
     configureAccessory(accessory) {
         this.log.info("Home + Control configureAccessory", accessory.displayName);
-        if (this.accessories.find(accessory => accessory.displayName === accessory.displayName) != undefined) {
-            accessory.displayName = accessory.displayName + " (2)";
+        let serialNumber = accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.SerialNumber).value;
+        if (this.alreadyRegistered.find(id => id == serialNumber) == undefined) {
+            if (typeof serialNumber === "string") {
+                this.alreadyRegistered.push(serialNumber);
+            }
         }
         // check which type of accessory it is
         switch (accessory.category) {

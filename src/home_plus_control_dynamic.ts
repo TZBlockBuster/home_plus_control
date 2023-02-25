@@ -24,6 +24,8 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
     private readonly accessories: PlatformAccessory[] = [];
 
+    private readonly alreadyRegistered: string[] = [];
+
     constructor(log: Logging, config: PlatformConfig, api: API) {
         this.log = log;
         this.api = api;
@@ -40,7 +42,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
             this.requestDeviceList().then((data) => {
                 for (const device of data) {
                     const uuid = hap.uuid.generate(device["id"] + device["name"]);
-                    if (this.accessories.find(accessory => accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber)!.value == device["id"]) == undefined) {
+                    if (this.alreadyRegistered.find(id => id == device["id"]) == undefined) {
                         const accessory = new Accessory(device["name"], uuid);
                         if (device["type"] == "BNLD") {
                             accessory.category = hap.Categories.LIGHTBULB;
@@ -72,9 +74,13 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     configureAccessory(accessory: PlatformAccessory) {
         this.log.info("Home + Control configureAccessory", accessory.displayName);
 
-        if (this.accessories.find(accessory => accessory.displayName === accessory.displayName) != undefined) {
-            accessory.displayName = accessory.displayName + " (2)";
+        let serialNumber = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber)!.value;
+        if (this.alreadyRegistered.find(id => id == serialNumber) == undefined) {
+            if (typeof serialNumber === "string") {
+                this.alreadyRegistered.push(serialNumber);
+            }
         }
+
         // check which type of accessory it is
         switch (accessory.category) {
             case hap.Categories.LIGHTBULB:
