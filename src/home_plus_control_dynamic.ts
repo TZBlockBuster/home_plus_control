@@ -62,6 +62,12 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                             this.configureAccessory(accessory);
 
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+                        } else if (device["type"] == "BNAS") {
+                            accessory.category = hap.Categories.WINDOW_COVERING;
+                            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
+                            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
+                            accessory.addService(hap.Service.WindowCovering, device["name"]);
+                            this.configureAccessory(accessory);
                         }
                     } else {
                         this.log.info("Accessory already registered: " + device["name"]);
@@ -85,6 +91,9 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                         break;
                     case "Netatmo BNIL":
                         this.configureSwitch(accessory)
+                        break;
+                    case "Netatmo BNAS":
+                        this.configureWindowCovering(accessory)
                         break;
                     default:
                         this.log.error("Unknown accessory type: " + accessory.category)
@@ -126,6 +135,21 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                 return isAvailable ? data["on"] : false;
             case RequestCharacteristic.Brightness:
                 return isAvailable ? data["brightness"] : 0;
+            case RequestCharacteristic.CurrentPosition:
+                return isAvailable ? data["current_position"] : 0;
+            case RequestCharacteristic.PositionState:
+                switch (data["position_state"]) {
+                    case 0:
+                        return hap.Characteristic.PositionState.DECREASING;
+                    case 50:
+                        return hap.Characteristic.PositionState.STOPPED;
+                    case 100:
+                        return hap.Characteristic.PositionState.INCREASING;
+                    default:
+                        return hap.Characteristic.PositionState.STOPPED;
+                }
+            case RequestCharacteristic.TargetPosition:
+                return isAvailable ? data["target_position"] : 0;
         }
     }
 
@@ -225,7 +249,37 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     }
 
     configureWindowCovering(accessory: PlatformAccessory) {
-        // do something
+
+
+        accessory.getService(hap.Service.WindowCovering)!.getCharacteristic(hap.Characteristic.CurrentPosition)
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                this.requestState(accessory, RequestCharacteristic.CurrentPosition).then((value) => {
+                    callback(null, value);
+                });
+            });
+
+        accessory.getService(hap.Service.WindowCovering)!.getCharacteristic(hap.Characteristic.PositionState)
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                this.requestState(accessory, RequestCharacteristic.PositionState).then((value) => {
+                    callback(null, value);
+                });
+            });
+
+        accessory.getService(hap.Service.WindowCovering)!.getCharacteristic(hap.Characteristic.TargetPosition)
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                this.requestState(accessory, RequestCharacteristic.TargetPosition).then((value) => {
+                    callback(null, value);
+                });
+            })
+            .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+                this.setState(accessory, RequestCharacteristic.TargetPosition, value).then((success) => {
+                    callback(null);
+                });
+            });
+
+
+        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios")
+
         this.accessories.push(accessory)
     }
 
@@ -240,4 +294,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 enum RequestCharacteristic {
     On = "On",
     Brightness = "Brightness",
+    CurrentPosition = "current_position",
+    PositionState = "position_state",
+    TargetPosition = "target_position",
 }

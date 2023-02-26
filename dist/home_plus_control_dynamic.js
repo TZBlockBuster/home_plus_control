@@ -38,6 +38,13 @@ class HomePlusControlPlatform {
                             this.configureAccessory(accessory);
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
                         }
+                        else if (device["type"] == "BNAS") {
+                            accessory.category = 14 /* hap.Categories.WINDOW_COVERING */;
+                            accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
+                            accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
+                            accessory.addService(hap.Service.WindowCovering, device["name"]);
+                            this.configureAccessory(accessory);
+                        }
                     }
                     else {
                         this.log.info("Accessory already registered: " + device["name"]);
@@ -58,6 +65,9 @@ class HomePlusControlPlatform {
                         break;
                     case "Netatmo BNIL":
                         this.configureSwitch(accessory);
+                        break;
+                    case "Netatmo BNAS":
+                        this.configureWindowCovering(accessory);
                         break;
                     default:
                         this.log.error("Unknown accessory type: " + accessory.category);
@@ -97,6 +107,21 @@ class HomePlusControlPlatform {
                 return isAvailable ? data["on"] : false;
             case RequestCharacteristic.Brightness:
                 return isAvailable ? data["brightness"] : 0;
+            case RequestCharacteristic.CurrentPosition:
+                return isAvailable ? data["current_position"] : 0;
+            case RequestCharacteristic.PositionState:
+                switch (data["position_state"]) {
+                    case 0:
+                        return hap.Characteristic.PositionState.DECREASING;
+                    case 50:
+                        return hap.Characteristic.PositionState.STOPPED;
+                    case 100:
+                        return hap.Characteristic.PositionState.INCREASING;
+                    default:
+                        return hap.Characteristic.PositionState.STOPPED;
+                }
+            case RequestCharacteristic.TargetPosition:
+                return isAvailable ? data["target_position"] : 0;
         }
     }
     async setState(accessory, characteristic, value) {
@@ -182,7 +207,30 @@ class HomePlusControlPlatform {
         this.accessories.push(accessory);
     }
     configureWindowCovering(accessory) {
-        // do something
+        accessory.getService(hap.Service.WindowCovering).getCharacteristic(hap.Characteristic.CurrentPosition)
+            .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
+            this.requestState(accessory, RequestCharacteristic.CurrentPosition).then((value) => {
+                callback(null, value);
+            });
+        });
+        accessory.getService(hap.Service.WindowCovering).getCharacteristic(hap.Characteristic.PositionState)
+            .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
+            this.requestState(accessory, RequestCharacteristic.PositionState).then((value) => {
+                callback(null, value);
+            });
+        });
+        accessory.getService(hap.Service.WindowCovering).getCharacteristic(hap.Characteristic.TargetPosition)
+            .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
+            this.requestState(accessory, RequestCharacteristic.TargetPosition).then((value) => {
+                callback(null, value);
+            });
+        })
+            .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
+            this.setState(accessory, RequestCharacteristic.TargetPosition, value).then((success) => {
+                callback(null);
+            });
+        });
+        accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios");
         this.accessories.push(accessory);
     }
     configureFan(accessory) {
@@ -194,6 +242,9 @@ var RequestCharacteristic;
 (function (RequestCharacteristic) {
     RequestCharacteristic["On"] = "On";
     RequestCharacteristic["Brightness"] = "Brightness";
+    RequestCharacteristic["CurrentPosition"] = "current_position";
+    RequestCharacteristic["PositionState"] = "position_state";
+    RequestCharacteristic["TargetPosition"] = "target_position";
 })(RequestCharacteristic || (RequestCharacteristic = {}));
 module.exports = (api) => {
     hap = api.hap;
