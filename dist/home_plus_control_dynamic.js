@@ -108,7 +108,7 @@ class HomePlusControlPlatform {
             }
         });
         const data = await response.json();
-        if (data.contains("status")) {
+        if (data["status"] != undefined) {
             return (await response.json())["status"] == "ok";
         }
         else {
