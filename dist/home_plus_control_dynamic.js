@@ -44,6 +44,7 @@ class HomePlusControlPlatform {
                             accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
                             accessory.addService(hap.Service.WindowCovering, device["name"]);
                             this.configureAccessory(accessory);
+                            this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
                         }
                     }
                     else {
@@ -110,7 +111,7 @@ class HomePlusControlPlatform {
             case RequestCharacteristic.CurrentPosition:
                 return isAvailable ? data["current_position"] : 0;
             case RequestCharacteristic.PositionState:
-                switch (data["position_state"]) {
+                switch (isAvailable ? data["position_state"] : 50) {
                     case 0:
                         return hap.Characteristic.PositionState.DECREASING;
                     case 50:
