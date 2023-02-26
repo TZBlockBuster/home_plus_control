@@ -107,13 +107,7 @@ class HomePlusControlPlatform {
                 "Content-Type": "application/json"
             }
         });
-        const data = await response.json();
-        if (data["status"] != undefined) {
-            return (await response.json())["status"] == "ok";
-        }
-        else {
-            return false;
-        }
+        return (await response.json())["status"] == "ok";
     }
     configureLightbulb(accessory) {
         accessory.on("identify" /* PlatformAccessoryEvent.IDENTIFY */, () => {
