@@ -109,7 +109,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     }
 
     async requestDeviceList(): Promise<any> {
-        const response = await fetch("http://192.168.1.96:8000/netatmo/" + this.home_id + "/devices/", {
+        const response = await fetch("http://192.168.168.166:8000/netatmo/" + this.home_id + "/devices/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -121,7 +121,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
     async requestState(accessory: PlatformAccessory, characteristic: RequestCharacteristic): Promise<any> {
         const serialNumber = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber)!.value;
-        const response = await fetch("http://192.168.1.96:8000/netatmo/" + this.home_id + "/state/" + serialNumber + "/", {
+        const response = await fetch("http://192.168.168.166:8000/netatmo/" + this.home_id + "/state/" + serialNumber + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -163,7 +163,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
     async setState(accessory: PlatformAccessory, characteristic: RequestCharacteristic, value: any): Promise<any> {
         const serialNumber = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber)!.value;
-        const response = await fetch("http://192.168.1.96:8000/netatmo/" + this.home_id + "/setstate/" + serialNumber + "/" + characteristic.toString() + "/" + value.toString() + "/", {
+        const response = await fetch("http://192.168.168.166:8000/netatmo/" + this.home_id + "/setstate/" + serialNumber + "/" + characteristic.toString() + "/" + value.toString() + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
