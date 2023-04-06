@@ -87,6 +87,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         if (this.alreadyRegisteredNames.find(name => name == accessory.displayName) != undefined) {
             accessory.displayName = accessory.displayName + " (2)";
         }
+        this.alreadyRegisteredNames.push(accessory.displayName);
 
         let serialNumber = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber)!.value;
         let model = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.Model)!.value;
