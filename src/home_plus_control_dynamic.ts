@@ -85,7 +85,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         this.log.info("Home + Control configureAccessory", accessory.displayName);
 
         if (this.alreadyRegisteredNames.includes(accessory.displayName)) {
-            accessory.displayName = accessory.displayName + " (2)";
+            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Name, accessory.displayName + " (2)");
         }
         this.alreadyRegisteredNames.push(accessory.displayName);
 
