@@ -26,6 +26,8 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
     private readonly alreadyRegistered: string[] = [];
 
+    private readonly alreadyRegisteredNames: string[] = [];
+
     constructor(log: Logging, config: PlatformConfig, api: API) {
         this.log = log;
         this.api = api;
@@ -81,6 +83,10 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
     configureAccessory(accessory: PlatformAccessory) {
         this.log.info("Home + Control configureAccessory", accessory.displayName);
+
+        if (this.alreadyRegisteredNames.find(name => name == accessory.displayName) != undefined) {
+            accessory.displayName = accessory.displayName + " (2)";
+        }
 
         let serialNumber = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber)!.value;
         let model = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.Model)!.value;

@@ -8,6 +8,7 @@ class HomePlusControlPlatform {
         this.home_id = "";
         this.accessories = [];
         this.alreadyRegistered = [];
+        this.alreadyRegisteredNames = [];
         this.log = log;
         this.api = api;
         // probably parse config or something here
@@ -56,6 +57,9 @@ class HomePlusControlPlatform {
     }
     configureAccessory(accessory) {
         this.log.info("Home + Control configureAccessory", accessory.displayName);
+        if (this.alreadyRegisteredNames.find(name => name == accessory.displayName) != undefined) {
+            accessory.displayName = accessory.displayName + " (2)";
+        }
         let serialNumber = accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.SerialNumber).value;
         let model = accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.Model).value;
         if (this.alreadyRegistered.find(id => id == serialNumber) == undefined) {
