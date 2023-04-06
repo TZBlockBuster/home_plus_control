@@ -18,15 +18,20 @@ class HomePlusControlPlatform {
             log.info("Home + Control 'didFinishLaunching'");
             this.requestDeviceList().then((data) => {
                 for (const device of data) {
-                    const uuid = hap.uuid.generate(device["id"] + device["name"]);
+                    let name = device["name"];
+                    if (this.alreadyRegisteredNames.find(n => n == name) != undefined) {
+                        name = name + " (2)";
+                    }
+                    this.alreadyRegisteredNames.push(name);
+                    const uuid = hap.uuid.generate(device["id"] + name);
                     if (this.alreadyRegistered.find(id => id == device["id"]) == undefined) {
-                        const accessory = new Accessory(device["name"], uuid);
+                        const accessory = new Accessory(name, uuid);
                         if (device["type"] == "BNLD") {
                             accessory.category = 5 /* hap.Categories.LIGHTBULB */;
                             accessory.getService(hap.Service.AccessoryInformation)
                                 .setCharacteristic(hap.Characteristic.SerialNumber, device["id"])
                                 .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
-                            accessory.addService(hap.Service.Lightbulb, device["name"])
+                            accessory.addService(hap.Service.Lightbulb, name)
                                 .setPrimaryService(true);
                             this.configureAccessory(accessory);
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -35,7 +40,7 @@ class HomePlusControlPlatform {
                             accessory.category = 8 /* hap.Categories.SWITCH */;
                             accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
                             accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
-                            accessory.addService(hap.Service.Switch, device["name"]);
+                            accessory.addService(hap.Service.Switch, name);
                             this.configureAccessory(accessory);
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
                         }
@@ -43,13 +48,13 @@ class HomePlusControlPlatform {
                             accessory.category = 14 /* hap.Categories.WINDOW_COVERING */;
                             accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
                             accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
-                            accessory.addService(hap.Service.WindowCovering, device["name"]);
+                            accessory.addService(hap.Service.WindowCovering, name);
                             this.configureAccessory(accessory);
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
                         }
                     }
                     else {
-                        this.log.info("Accessory already registered: " + device["name"]);
+                        this.log.info("Accessory already registered: " + name);
                     }
                 }
             });
