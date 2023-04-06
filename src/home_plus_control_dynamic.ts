@@ -57,7 +57,6 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                                 .setCharacteristic(hap.Characteristic.SerialNumber, device["id"])
                                 .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
                             accessory.addService(hap.Service.Lightbulb, name)
-                                .setPrimaryService(true);
                             this.configureAccessory(accessory);
 
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -103,12 +102,12 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                     case "Netatmo BNLD":
                         this.configureLightbulb(accessory)
                         break;
-                    case "Netatmo BNIL":
+                    /*case "Netatmo BNIL":
                         this.configureSwitch(accessory)
                         break;
                     case "Netatmo BNAS":
                         this.configureWindowCovering(accessory)
-                        break;
+                        break;*/
                     default:
                         this.log.error("Unknown accessory type: " + accessory.category)
                         break;
