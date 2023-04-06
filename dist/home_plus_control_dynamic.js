@@ -124,6 +124,18 @@ class HomePlusControlPlatform {
             case RequestCharacteristic.TargetPosition:
                 let targetPosition = isAvailable ? data["target_position"] : 0;
                 let currentPosition = isAvailable ? data["current_position"] : 0;
+                if (targetPosition > 100) {
+                    targetPosition = 100;
+                }
+                else if (targetPosition < 0) {
+                    targetPosition = 0;
+                }
+                if (currentPosition > 100) {
+                    currentPosition = 100;
+                }
+                else if (currentPosition < 0) {
+                    currentPosition = 0;
+                }
                 if (targetPosition == 50) {
                     return currentPosition;
                 }
