@@ -19,12 +19,12 @@ class HomePlusControlPlatform {
             this.requestDeviceList().then((data) => {
                 for (const device of data) {
                     let name = device["name"];
-                    if (this.alreadyRegisteredNames.find(n => n == name) != undefined) {
-                        name = name + " (2)";
-                    }
-                    this.alreadyRegisteredNames.push(name);
                     const uuid = hap.uuid.generate(device["id"] + name);
                     if (this.alreadyRegistered.find(id => id == device["id"]) == undefined) {
+                        if (this.alreadyRegisteredNames.find(n => n == name) != undefined) {
+                            name = name + " (2)";
+                        }
+                        this.alreadyRegisteredNames.push(name);
                         const accessory = new Accessory(name, uuid);
                         if (device["type"] == "BNLD") {
                             accessory.category = 5 /* hap.Categories.LIGHTBULB */;
