@@ -109,7 +109,14 @@ class HomePlusControlPlatform {
             case RequestCharacteristic.Brightness:
                 return isAvailable ? data["brightness"] : 0;
             case RequestCharacteristic.CurrentPosition:
-                return isAvailable ? data["current_position"] : 0;
+                let pos = isAvailable ? data["current_position"] : 0;
+                if (pos > 100) {
+                    pos = 100;
+                }
+                if (pos < 0) {
+                    pos = 0;
+                }
+                return pos;
             case RequestCharacteristic.PositionState:
                 switch (isAvailable ? data["target_position"] : 50) {
                     case 0:
