@@ -61,10 +61,6 @@ class HomePlusControlPlatform {
     }
     configureAccessory(accessory) {
         this.log.info("Home + Control configureAccessory", accessory.displayName);
-        if (this.alreadyRegisteredNames.includes(accessory.displayName)) {
-            accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Name, accessory.displayName + " (2)");
-        }
-        this.alreadyRegisteredNames.push(accessory.displayName);
         let serialNumber = accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.SerialNumber).value;
         let model = accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.Model).value;
         if (this.alreadyRegistered.find(id => id == serialNumber) == undefined) {
@@ -73,12 +69,12 @@ class HomePlusControlPlatform {
                     case "Netatmo BNLD":
                         this.configureLightbulb(accessory);
                         break;
-                    /*case "Netatmo BNIL":
-                        this.configureSwitch(accessory)
+                    case "Netatmo BNIL":
+                        this.configureSwitch(accessory);
                         break;
                     case "Netatmo BNAS":
-                        this.configureWindowCovering(accessory)
-                        break;*/
+                        this.configureWindowCovering(accessory);
+                        break;
                     default:
                         this.log.error("Unknown accessory type: " + accessory.category);
                         break;

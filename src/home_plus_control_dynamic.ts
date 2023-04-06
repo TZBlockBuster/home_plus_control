@@ -88,11 +88,6 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     configureAccessory(accessory: PlatformAccessory) {
         this.log.info("Home + Control configureAccessory", accessory.displayName);
 
-        if (this.alreadyRegisteredNames.includes(accessory.displayName)) {
-            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Name, accessory.displayName + " (2)");
-        }
-        this.alreadyRegisteredNames.push(accessory.displayName);
-
         let serialNumber = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber)!.value;
         let model = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.Model)!.value;
 
@@ -102,12 +97,12 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                     case "Netatmo BNLD":
                         this.configureLightbulb(accessory)
                         break;
-                    /*case "Netatmo BNIL":
+                    case "Netatmo BNIL":
                         this.configureSwitch(accessory)
                         break;
                     case "Netatmo BNAS":
                         this.configureWindowCovering(accessory)
-                        break;*/
+                        break;
                     default:
                         this.log.error("Unknown accessory type: " + accessory.category)
                         break;
