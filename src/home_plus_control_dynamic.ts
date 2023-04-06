@@ -1,4 +1,4 @@
-import {API, APIEvent, CharacteristicEventTypes, CharacteristicGetCallback, CharacteristicSetCallback, CharacteristicValue, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformAccessoryEvent, PlatformConfig} from "homebridge";
+import {API, APIEvent, Characteristic, CharacteristicEventTypes, CharacteristicGetCallback, CharacteristicSetCallback, CharacteristicValue, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformAccessoryEvent, PlatformConfig, Service} from "homebridge";
 
 
 const PLATFORM_NAME = "homebridge-home_plus_control";
@@ -26,8 +26,6 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
     private readonly alreadyRegistered: string[] = [];
 
-    private readonly alreadyRegisteredNames: string[] = [];
-
     constructor(log: Logging, config: PlatformConfig, api: API) {
         this.log = log;
         this.api = api;
@@ -43,20 +41,16 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
             this.requestDeviceList().then((data) => {
                 for (const device of data) {
-                    let name = device["name"];
-                    const uuid = hap.uuid.generate(device["id"] + name);
+                    const uuid = hap.uuid.generate(device["id"] + device["name"]);
                     if (this.alreadyRegistered.find(id => id == device["id"]) == undefined) {
-                        if (this.alreadyRegisteredNames.find(n => n == name) != undefined) {
-                            name = name + " (2)";
-                        }
-                        this.alreadyRegisteredNames.push(name);
-                        const accessory = new Accessory(name, uuid);
+                        const accessory = new Accessory(device["name"], uuid);
                         if (device["type"] == "BNLD") {
                             accessory.category = hap.Categories.LIGHTBULB;
                             accessory.getService(hap.Service.AccessoryInformation)!
                                 .setCharacteristic(hap.Characteristic.SerialNumber, device["id"])
                                 .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
-                            accessory.addService(hap.Service.Lightbulb, name)
+                            accessory.addService(hap.Service.Lightbulb, device["name"])
+                                .setPrimaryService(true);
                             this.configureAccessory(accessory);
 
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -64,7 +58,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                             accessory.category = hap.Categories.SWITCH;
                             accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
                             accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
-                            accessory.addService(hap.Service.Switch, name);
+                            accessory.addService(hap.Service.Switch, device["name"]);
                             this.configureAccessory(accessory);
 
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -72,13 +66,13 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                             accessory.category = hap.Categories.WINDOW_COVERING;
                             accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
                             accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
-                            accessory.addService(hap.Service.WindowCovering, name);
+                            accessory.addService(hap.Service.WindowCovering, device["name"]);
                             this.configureAccessory(accessory);
 
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
                         }
                     } else {
-                        this.log.info("Accessory already registered: " + name);
+                        this.log.info("Accessory already registered: " + device["name"]);
                     }
                 }
             });
