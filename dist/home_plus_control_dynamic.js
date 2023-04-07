@@ -61,7 +61,7 @@ class HomePlusControlPlatform {
             });
             this.requestDeviceList(this.thermo_home_id).then((data) => {
                 for (const device of data) {
-                    const uuid = hap.uuid.generate(device["id"] + device["name"]);
+                    const uuid = hap.uuid.generate(device["id"] + device["name"] + "BWS");
                     if (this.alreadyRegistered.find(id => id == device["id"]) == undefined) {
                         const accessory = new Accessory(device["name"], uuid);
                         if (device["type"] == "BNS") {
@@ -296,9 +296,6 @@ class HomePlusControlPlatform {
             this.requestState(accessory, RequestCharacteristic.CurrentHeatingCoolingState, this.thermo_home_id).then((value) => {
                 callback(null, value);
             });
-        })
-            .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
-            callback(null);
         });
         accessory.getService(hap.Service.Thermostat).getCharacteristic(hap.Characteristic.CurrentTemperature)
             .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
@@ -311,16 +308,10 @@ class HomePlusControlPlatform {
             this.requestState(accessory, RequestCharacteristic.TargetTemperature, this.thermo_home_id).then((value) => {
                 callback(null, value);
             });
-        })
-            .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
-            callback(null);
         });
         accessory.getService(hap.Service.Thermostat).getCharacteristic(hap.Characteristic.TemperatureDisplayUnits)
             .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
             callback(null, hap.Characteristic.TemperatureDisplayUnits.CELSIUS);
-        })
-            .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
-            callback(null);
         });
         accessory.getService(hap.Service.Thermostat).getCharacteristic(hap.Characteristic.CurrentRelativeHumidity)
             .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
