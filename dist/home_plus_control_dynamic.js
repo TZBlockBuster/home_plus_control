@@ -6,12 +6,14 @@ let Accessory;
 class HomePlusControlPlatform {
     constructor(log, config, api) {
         this.home_id = "";
+        this.thermo_home_id = "";
         this.accessories = [];
         this.alreadyRegistered = [];
         this.log = log;
         this.api = api;
         // probably parse config or something here
         this.home_id = config["home_id"];
+        this.thermo_home_id = config["thermo_home_id"];
         log.info("Home + Control finished initializing!");
         api.on("didFinishLaunching" /* APIEvent.DID_FINISH_LAUNCHING */, () => {
             log.info("Home + Control 'didFinishLaunching'");
@@ -52,6 +54,25 @@ class HomePlusControlPlatform {
                     }
                 }
             });
+            this.requestDeviceList(this.thermo_home_id).then((data) => {
+                for (const device of data) {
+                    const uuid = hap.uuid.generate(device["id"] + device["name"]);
+                    if (this.alreadyRegistered.find(id => id == device["id"]) == undefined) {
+                        const accessory = new Accessory(device["name"], uuid);
+                        if (device["type"] == "BNS") {
+                            accessory.category = 9 /* hap.Categories.THERMOSTAT */;
+                            accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
+                            accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
+                            accessory.addService(hap.Service.Thermostat, device["name"]);
+                            this.configureAccessory(accessory);
+                            this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+                        }
+                    }
+                    else {
+                        this.log.info("Accessory already registered: " + device["name"]);
+                    }
+                }
+            });
         });
     }
     configureAccessory(accessory) {
@@ -70,6 +91,8 @@ class HomePlusControlPlatform {
                     case "Netatmo BNAS":
                         this.configureWindowCovering(accessory);
                         break;
+                    case "Netatmo BNS":
+                        this.configureThermostat(accessory);
                     default:
                         this.log.error("Unknown accessory type: " + accessory.category);
                         break;
@@ -81,8 +104,8 @@ class HomePlusControlPlatform {
             this.log.info("Accessory already registered: " + accessory.displayName);
         }
     }
-    async requestDeviceList() {
-        const response = await fetch("http://192.168.168.166:8000/netatmo/" + this.home_id + "/devices/", {
+    async requestDeviceList(home_id = this.home_id) {
+        const response = await fetch("http://192.168.168.166:8000/netatmo/" + home_id + "/devices/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -90,9 +113,9 @@ class HomePlusControlPlatform {
         });
         return await response.json();
     }
-    async requestState(accessory, characteristic) {
+    async requestState(accessory, characteristic, home_id = this.home_id) {
         const serialNumber = accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.SerialNumber).value;
-        const response = await fetch("http://192.168.168.166:8000/netatmo/" + this.home_id + "/state/" + serialNumber + "/", {
+        const response = await fetch("http://192.168.168.166:8000/netatmo/" + home_id + "/state/" + serialNumber + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -158,11 +181,24 @@ class HomePlusControlPlatform {
                     return targetPosition;
                 }*/
                 return targetPosition;
+            case RequestCharacteristic.CurrentHeatingCoolingState:
+                if (data["heating_power_request"] == 0) {
+                    return hap.Characteristic.CurrentHeatingCoolingState.OFF;
+                }
+                else {
+                    return hap.Characteristic.CurrentHeatingCoolingState.HEAT;
+                }
+            case RequestCharacteristic.CurrentTemperature:
+                return data["therm_measured_temperature"];
+            case RequestCharacteristic.TargetTemperature:
+                return data["therm_setpoint_temperature"];
+            case RequestCharacteristic.CurrentRelativeHumidity:
+                return data["humidity"];
         }
     }
-    async setState(accessory, characteristic, value) {
+    async setState(accessory, characteristic, value, home_id = this.home_id) {
         const serialNumber = accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.SerialNumber).value;
-        const response = await fetch("http://192.168.168.166:8000/netatmo/" + this.home_id + "/setstate/" + serialNumber + "/" + characteristic.toString() + "/" + value.toString() + "/", {
+        const response = await fetch("http://192.168.168.166:8000/netatmo/" + home_id + "/setstate/" + serialNumber + "/" + characteristic.toString() + "/" + value.toString() + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -239,7 +275,40 @@ class HomePlusControlPlatform {
         this.accessories.push(accessory);
     }
     configureThermostat(accessory) {
-        // do something
+        accessory.getService(hap.Service.Thermostat).getCharacteristic(hap.Characteristic.CurrentHeatingCoolingState)
+            .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
+            this.requestState(accessory, RequestCharacteristic.CurrentHeatingCoolingState, this.thermo_home_id).then((value) => {
+                callback(null, value);
+            });
+        });
+        accessory.getService(hap.Service.Thermostat).getCharacteristic(hap.Characteristic.TargetHeatingCoolingState)
+            .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
+            this.requestState(accessory, RequestCharacteristic.CurrentHeatingCoolingState, this.thermo_home_id).then((value) => {
+                callback(null, value);
+            });
+        });
+        accessory.getService(hap.Service.Thermostat).getCharacteristic(hap.Characteristic.CurrentTemperature)
+            .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
+            this.requestState(accessory, RequestCharacteristic.CurrentTemperature, this.thermo_home_id).then((value) => {
+                callback(null, value);
+            });
+        });
+        accessory.getService(hap.Service.Thermostat).getCharacteristic(hap.Characteristic.TargetTemperature)
+            .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
+            this.requestState(accessory, RequestCharacteristic.TargetTemperature, this.thermo_home_id).then((value) => {
+                callback(null, value);
+            });
+        });
+        accessory.getService(hap.Service.Thermostat).getCharacteristic(hap.Characteristic.TemperatureDisplayUnits)
+            .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
+            callback(null, hap.Characteristic.TemperatureDisplayUnits.CELSIUS);
+        });
+        accessory.getService(hap.Service.Thermostat).getCharacteristic(hap.Characteristic.CurrentRelativeHumidity)
+            .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
+            this.requestState(accessory, RequestCharacteristic.CurrentRelativeHumidity, this.thermo_home_id).then((value) => {
+                callback(null, value);
+            });
+        });
         this.accessories.push(accessory);
     }
     configureWindowCovering(accessory) {
@@ -278,10 +347,6 @@ class HomePlusControlPlatform {
         accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios");
         this.accessories.push(accessory);
     }
-    configureFan(accessory) {
-        // do something
-        this.accessories.push(accessory);
-    }
 }
 var RequestCharacteristic;
 (function (RequestCharacteristic) {
@@ -290,6 +355,10 @@ var RequestCharacteristic;
     RequestCharacteristic["CurrentPosition"] = "current_position";
     RequestCharacteristic["PositionState"] = "position_state";
     RequestCharacteristic["TargetPosition"] = "target_position";
+    RequestCharacteristic["CurrentHeatingCoolingState"] = "heating_power_request";
+    RequestCharacteristic["CurrentTemperature"] = "therm_measured_temperature";
+    RequestCharacteristic["TargetTemperature"] = "therm_setpoint_temperature";
+    RequestCharacteristic["CurrentRelativeHumidity"] = "humidity";
 })(RequestCharacteristic || (RequestCharacteristic = {}));
 module.exports = (api) => {
     hap = api.hap;

@@ -21,6 +21,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     private readonly api: API
 
     private readonly home_id: string = "";
+    private readonly thermo_home_id: string = "";
 
     private readonly accessories: PlatformAccessory[] = [];
 
@@ -33,6 +34,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         // probably parse config or something here
 
         this.home_id = config["home_id"];
+        this.thermo_home_id = config["thermo_home_id"];
 
         log.info("Home + Control finished initializing!");
 
@@ -76,6 +78,26 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                     }
                 }
             });
+
+            this.requestDeviceList(this.thermo_home_id).then((data) => {
+                for (const device of data) {
+                    const uuid = hap.uuid.generate(device["id"] + device["name"]);
+                    if (this.alreadyRegistered.find(id => id == device["id"]) == undefined) {
+                        const accessory = new Accessory(device["name"], uuid);
+                        if (device["type"] == "BNS") {
+                            accessory.category = hap.Categories.THERMOSTAT;
+                            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
+                            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
+                            accessory.addService(hap.Service.Thermostat, device["name"]);
+                            this.configureAccessory(accessory);
+
+                            this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+                        }
+                    } else {
+                        this.log.info("Accessory already registered: " + device["name"]);
+                    }
+                }
+            })
         });
     }
 
@@ -97,6 +119,8 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                     case "Netatmo BNAS":
                         this.configureWindowCovering(accessory)
                         break;
+                    case "Netatmo BNS":
+                        this.configureThermostat(accessory)
                     default:
                         this.log.error("Unknown accessory type: " + accessory.category)
                         break;
@@ -108,8 +132,8 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         }
     }
 
-    async requestDeviceList(): Promise<any> {
-        const response = await fetch("http://192.168.168.166:8000/netatmo/" + this.home_id + "/devices/", {
+    async requestDeviceList(home_id = this.home_id): Promise<any> {
+        const response = await fetch("http://192.168.168.166:8000/netatmo/" + home_id + "/devices/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -119,9 +143,9 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     }
 
 
-    async requestState(accessory: PlatformAccessory, characteristic: RequestCharacteristic): Promise<any> {
+    async requestState(accessory: PlatformAccessory, characteristic: RequestCharacteristic, home_id = this.home_id): Promise<any> {
         const serialNumber = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber)!.value;
-        const response = await fetch("http://192.168.168.166:8000/netatmo/" + this.home_id + "/state/" + serialNumber + "/", {
+        const response = await fetch("http://192.168.168.166:8000/netatmo/" + home_id + "/state/" + serialNumber + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -154,16 +178,16 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                 } else {
                     return hap.Characteristic.PositionState.STOPPED;
                 }
-                /*switch (isAvailable ? data["target_position"] : 50) {
-                    case 0:
-                        return hap.Characteristic.PositionState.DECREASING;
-                    case 50:
-                        return hap.Characteristic.PositionState.STOPPED;
-                    case 100:
-                        return hap.Characteristic.PositionState.INCREASING;
-                    default:
-                        return hap.Characteristic.PositionState.STOPPED;
-                }*/
+            /*switch (isAvailable ? data["target_position"] : 50) {
+                case 0:
+                    return hap.Characteristic.PositionState.DECREASING;
+                case 50:
+                    return hap.Characteristic.PositionState.STOPPED;
+                case 100:
+                    return hap.Characteristic.PositionState.INCREASING;
+                default:
+                    return hap.Characteristic.PositionState.STOPPED;
+            }*/
             case RequestCharacteristic.TargetPosition:
                 let targetPosition = isAvailable ? data["target_position"] : 0;
                 let currentPosition = isAvailable ? data["current_position"] : 0;
@@ -184,12 +208,24 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                     return targetPosition;
                 }*/
                 return targetPosition;
+            case RequestCharacteristic.CurrentHeatingCoolingState:
+                if (data["heating_power_request"] == 0) {
+                    return hap.Characteristic.CurrentHeatingCoolingState.OFF;
+                } else {
+                    return hap.Characteristic.CurrentHeatingCoolingState.HEAT;
+                }
+            case RequestCharacteristic.CurrentTemperature:
+                return data["therm_measured_temperature"];
+            case RequestCharacteristic.TargetTemperature:
+                return data["therm_setpoint_temperature"];
+            case RequestCharacteristic.CurrentRelativeHumidity:
+                return data["humidity"];
         }
     }
 
-    async setState(accessory: PlatformAccessory, characteristic: RequestCharacteristic, value: any): Promise<any> {
+    async setState(accessory: PlatformAccessory, characteristic: RequestCharacteristic, value: any, home_id = this.home_id): Promise<any> {
         const serialNumber = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber)!.value;
-        const response = await fetch("http://192.168.168.166:8000/netatmo/" + this.home_id + "/setstate/" + serialNumber + "/" + characteristic.toString() + "/" + value.toString() + "/", {
+        const response = await fetch("http://192.168.168.166:8000/netatmo/" + home_id + "/setstate/" + serialNumber + "/" + characteristic.toString() + "/" + value.toString() + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -278,7 +314,48 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     }
 
     configureThermostat(accessory: PlatformAccessory) {
-        // do something
+        accessory.getService(hap.Service.Thermostat)!.getCharacteristic(hap.Characteristic.CurrentHeatingCoolingState)
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                this.requestState(accessory, RequestCharacteristic.CurrentHeatingCoolingState, this.thermo_home_id).then((value) => {
+                    callback(null, value);
+                });
+            });
+
+        accessory.getService(hap.Service.Thermostat)!.getCharacteristic(hap.Characteristic.TargetHeatingCoolingState)
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                this.requestState(accessory, RequestCharacteristic.CurrentHeatingCoolingState, this.thermo_home_id).then((value) => {
+                    callback(null, value);
+                });
+            });
+
+        accessory.getService(hap.Service.Thermostat)!.getCharacteristic(hap.Characteristic.CurrentTemperature)
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                this.requestState(accessory, RequestCharacteristic.CurrentTemperature, this.thermo_home_id).then((value) => {
+                    callback(null, value);
+                });
+            });
+
+        accessory.getService(hap.Service.Thermostat)!.getCharacteristic(hap.Characteristic.TargetTemperature)
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                this.requestState(accessory, RequestCharacteristic.TargetTemperature, this.thermo_home_id).then((value) => {
+                    callback(null, value);
+                });
+            });
+
+        accessory.getService(hap.Service.Thermostat)!.getCharacteristic(hap.Characteristic.TemperatureDisplayUnits)
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                callback(null, hap.Characteristic.TemperatureDisplayUnits.CELSIUS);
+            });
+
+        accessory.getService(hap.Service.Thermostat)!.getCharacteristic(hap.Characteristic.CurrentRelativeHumidity)
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                this.requestState(accessory, RequestCharacteristic.CurrentRelativeHumidity, this.thermo_home_id).then((value) => {
+                    callback(null, value);
+                });
+            });
+
+
+
         this.accessories.push(accessory)
     }
 
@@ -327,11 +404,6 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         this.accessories.push(accessory)
     }
 
-    configureFan(accessory: PlatformAccessory) {
-        // do something
-        this.accessories.push(accessory)
-    }
-
 
 }
 
@@ -341,4 +413,9 @@ enum RequestCharacteristic {
     CurrentPosition = "current_position",
     PositionState = "position_state",
     TargetPosition = "target_position",
+    CurrentHeatingCoolingState = "heating_power_request",
+    CurrentTemperature = "therm_measured_temperature",
+    TargetTemperature = "therm_setpoint_temperature",
+    CurrentRelativeHumidity = "humidity"
+
 }
