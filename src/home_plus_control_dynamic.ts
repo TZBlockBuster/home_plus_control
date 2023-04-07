@@ -306,8 +306,8 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                 });
             })
             .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-                let targetPosition = value >= 50 ? 100 : 0;
-                this.setState(accessory, RequestCharacteristic.TargetPosition, targetPosition).then((success) => {
+                //let targetPosition = value >= 50 ? 100 : 0;
+                this.setState(accessory, RequestCharacteristic.TargetPosition, value).then((success) => {
                     callback(null);
                 });
             });
