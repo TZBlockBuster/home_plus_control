@@ -26,7 +26,8 @@ class HomePlusControlPlatform {
                             accessory.category = 5 /* hap.Categories.LIGHTBULB */;
                             accessory.getService(hap.Service.AccessoryInformation)
                                 .setCharacteristic(hap.Characteristic.SerialNumber, device["id"])
-                                .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
+                                .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"])
+                                .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "com.BlockWare-Studios.CasaPetite-67");
                             accessory.addService(hap.Service.Lightbulb, device["name"])
                                 .setPrimaryService(true);
                             this.configureAccessory(accessory);
@@ -34,16 +35,20 @@ class HomePlusControlPlatform {
                         }
                         else if (device["type"] == "BNIL") {
                             accessory.category = 8 /* hap.Categories.SWITCH */;
-                            accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
-                            accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
+                            accessory.getService(hap.Service.AccessoryInformation)
+                                .setCharacteristic(hap.Characteristic.SerialNumber, device["id"])
+                                .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"])
+                                .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "com.BlockWare-Studios.CasaPetite-67");
                             accessory.addService(hap.Service.Switch, device["name"]);
                             this.configureAccessory(accessory);
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
                         }
                         else if (device["type"] == "BNAS") {
                             accessory.category = 14 /* hap.Categories.WINDOW_COVERING */;
-                            accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
-                            accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
+                            accessory.getService(hap.Service.AccessoryInformation)
+                                .setCharacteristic(hap.Characteristic.SerialNumber, device["id"])
+                                .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"])
+                                .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "com.BlockWare-Studios.CasaPetite-67");
                             accessory.addService(hap.Service.WindowCovering, device["name"]);
                             this.configureAccessory(accessory);
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -61,8 +66,10 @@ class HomePlusControlPlatform {
                         const accessory = new Accessory(device["name"], uuid);
                         if (device["type"] == "BNS") {
                             accessory.category = 9 /* hap.Categories.THERMOSTAT */;
-                            accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
-                            accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
+                            accessory.getService(hap.Service.AccessoryInformation)
+                                .setCharacteristic(hap.Characteristic.SerialNumber, device["id"])
+                                .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"])
+                                .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "com.BlockWare-Studios.CasaPetite-67");
                             accessory.addService(hap.Service.Thermostat, device["name"]);
                             this.configureAccessory(accessory);
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);

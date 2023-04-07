@@ -50,7 +50,8 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                             accessory.category = hap.Categories.LIGHTBULB;
                             accessory.getService(hap.Service.AccessoryInformation)!
                                 .setCharacteristic(hap.Characteristic.SerialNumber, device["id"])
-                                .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
+                                .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"])
+                                .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "com.BlockWare-Studios.CasaPetite-67");
                             accessory.addService(hap.Service.Lightbulb, device["name"])
                                 .setPrimaryService(true);
                             this.configureAccessory(accessory);
@@ -58,16 +59,20 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
                         } else if (device["type"] == "BNIL") {
                             accessory.category = hap.Categories.SWITCH;
-                            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
-                            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
+                            accessory.getService(hap.Service.AccessoryInformation)!
+                                .setCharacteristic(hap.Characteristic.SerialNumber, device["id"])
+                                .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"])
+                                .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "com.BlockWare-Studios.CasaPetite-67");
                             accessory.addService(hap.Service.Switch, device["name"]);
                             this.configureAccessory(accessory);
 
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
                         } else if (device["type"] == "BNAS") {
                             accessory.category = hap.Categories.WINDOW_COVERING;
-                            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
-                            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
+                            accessory.getService(hap.Service.AccessoryInformation)!
+                                .setCharacteristic(hap.Characteristic.SerialNumber, device["id"])
+                                .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"])
+                                .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "com.BlockWare-Studios.CasaPetite-67");
                             accessory.addService(hap.Service.WindowCovering, device["name"]);
                             this.configureAccessory(accessory);
 
@@ -86,8 +91,10 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                         const accessory = new Accessory(device["name"], uuid);
                         if (device["type"] == "BNS") {
                             accessory.category = hap.Categories.THERMOSTAT;
-                            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.SerialNumber, device["id"]);
-                            accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"]);
+                            accessory.getService(hap.Service.AccessoryInformation)!
+                                .setCharacteristic(hap.Characteristic.SerialNumber, device["id"])
+                                .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"])
+                                .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "com.BlockWare-Studios.CasaPetite-67");
                             accessory.addService(hap.Service.Thermostat, device["name"]);
                             this.configureAccessory(accessory);
 
@@ -366,15 +373,12 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
             });
 
 
-
         accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios");
 
         this.accessories.push(accessory);
     }
 
     configureWindowCovering(accessory: PlatformAccessory) {
-
-
         accessory.getService(hap.Service.WindowCovering)!.getCharacteristic(hap.Characteristic.CurrentPosition)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 this.requestState(accessory, RequestCharacteristic.CurrentPosition).then((value) => {
