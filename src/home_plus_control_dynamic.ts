@@ -147,7 +147,14 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                 }
                 return pos;
             case RequestCharacteristic.PositionState:
-                switch (isAvailable ? data["target_position"] : 50) {
+                if (data["target_position"] < data["current_position"]) {
+                    return hap.Characteristic.PositionState.DECREASING;
+                } else if (data["target_position"] > data["current_position"]) {
+                    return hap.Characteristic.PositionState.INCREASING;
+                } else {
+                    return hap.Characteristic.PositionState.STOPPED;
+                }
+                /*switch (isAvailable ? data["target_position"] : 50) {
                     case 0:
                         return hap.Characteristic.PositionState.DECREASING;
                     case 50:
@@ -156,7 +163,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                         return hap.Characteristic.PositionState.INCREASING;
                     default:
                         return hap.Characteristic.PositionState.STOPPED;
-                }
+                }*/
             case RequestCharacteristic.TargetPosition:
                 let targetPosition = isAvailable ? data["target_position"] : 0;
                 let currentPosition = isAvailable ? data["current_position"] : 0;
@@ -171,11 +178,12 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                     currentPosition = 0;
                 }
 
-                if (targetPosition == 50) {
+                /*if (targetPosition == 50) {
                     return currentPosition;
                 } else {
                     return targetPosition;
-                }
+                }*/
+                return targetPosition;
         }
     }
 
