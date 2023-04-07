@@ -107,9 +107,6 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         let serialNumber = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber)!.value;
         let model = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.Model)!.value;
 
-        if (model == "Netatmo BNS" && !accessory.displayName.startsWith("Therm: ")) {
-            accessory.displayName = "Therm: " + accessory.displayName;
-        }
 
         if (this.alreadyRegistered.find(id => id == serialNumber) == undefined) {
             if (typeof serialNumber === "string") {
@@ -331,6 +328,9 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                 this.requestState(accessory, RequestCharacteristic.CurrentHeatingCoolingState, this.thermo_home_id).then((value) => {
                     callback(null, value);
                 });
+            })
+            .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+                callback(null);
             });
 
         accessory.getService(hap.Service.Thermostat)!.getCharacteristic(hap.Characteristic.CurrentTemperature)
@@ -345,11 +345,17 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                 this.requestState(accessory, RequestCharacteristic.TargetTemperature, this.thermo_home_id).then((value) => {
                     callback(null, value);
                 });
-            });
+            })
+            .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+                callback(null);
+            })
 
         accessory.getService(hap.Service.Thermostat)!.getCharacteristic(hap.Characteristic.TemperatureDisplayUnits)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 callback(null, hap.Characteristic.TemperatureDisplayUnits.CELSIUS);
+            })
+            .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+                callback(null);
             });
 
         accessory.getService(hap.Service.Thermostat)!.getCharacteristic(hap.Characteristic.CurrentRelativeHumidity)
@@ -361,9 +367,9 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
 
 
-        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios")
+        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios");
 
-        this.accessories.push(accessory)
+        this.accessories.push(accessory);
     }
 
     configureWindowCovering(accessory: PlatformAccessory) {

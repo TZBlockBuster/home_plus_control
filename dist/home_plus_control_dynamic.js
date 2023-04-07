@@ -79,9 +79,6 @@ class HomePlusControlPlatform {
         this.log.info("Home + Control configureAccessory", accessory.displayName);
         let serialNumber = accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.SerialNumber).value;
         let model = accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.Model).value;
-        if (model == "Netatmo BNS" && !accessory.displayName.startsWith("Therm: ")) {
-            accessory.displayName = "Therm: " + accessory.displayName;
-        }
         if (this.alreadyRegistered.find(id => id == serialNumber) == undefined) {
             if (typeof serialNumber === "string") {
                 switch (model) {
@@ -290,6 +287,9 @@ class HomePlusControlPlatform {
             this.requestState(accessory, RequestCharacteristic.CurrentHeatingCoolingState, this.thermo_home_id).then((value) => {
                 callback(null, value);
             });
+        })
+            .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
+            callback(null);
         });
         accessory.getService(hap.Service.Thermostat).getCharacteristic(hap.Characteristic.CurrentTemperature)
             .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
@@ -302,10 +302,16 @@ class HomePlusControlPlatform {
             this.requestState(accessory, RequestCharacteristic.TargetTemperature, this.thermo_home_id).then((value) => {
                 callback(null, value);
             });
+        })
+            .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
+            callback(null);
         });
         accessory.getService(hap.Service.Thermostat).getCharacteristic(hap.Characteristic.TemperatureDisplayUnits)
             .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
             callback(null, hap.Characteristic.TemperatureDisplayUnits.CELSIUS);
+        })
+            .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
+            callback(null);
         });
         accessory.getService(hap.Service.Thermostat).getCharacteristic(hap.Characteristic.CurrentRelativeHumidity)
             .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
