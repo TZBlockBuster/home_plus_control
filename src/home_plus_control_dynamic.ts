@@ -107,6 +107,10 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         let serialNumber = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber)!.value;
         let model = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.Model)!.value;
 
+        if (model == "Netatmo BNS" && !accessory.displayName.startsWith("Therm: ")) {
+            accessory.displayName = "Therm: " + accessory.displayName;
+        }
+
         if (this.alreadyRegistered.find(id => id == serialNumber) == undefined) {
             if (typeof serialNumber === "string") {
                 switch (model) {
@@ -121,6 +125,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                         break;
                     case "Netatmo BNS":
                         this.configureThermostat(accessory)
+                        break;
                     default:
                         this.log.error("Unknown accessory type: " + accessory.category)
                         break;
@@ -355,6 +360,8 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
             });
 
 
+
+        accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios")
 
         this.accessories.push(accessory)
     }
