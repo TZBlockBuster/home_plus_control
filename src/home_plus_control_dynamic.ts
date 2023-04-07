@@ -114,6 +114,9 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         let serialNumber = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber)!.value;
         let model = accessory.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.Model)!.value;
 
+        accessory.getService(hap.Service.AccessoryInformation)!
+            .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "com.BlockWare-Studios.CasaPetite-67");
+
 
         if (this.alreadyRegistered.find(id => id == serialNumber) == undefined) {
             if (typeof serialNumber === "string") {
