@@ -258,6 +258,14 @@ class HomePlusControlPlatform {
                 callback(null);
             });
         });
+        accessory.getService(hap.Service.WindowCovering).getCharacteristic(hap.Characteristic.HoldPosition)
+            .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
+            if (value) {
+                this.setState(accessory, RequestCharacteristic.TargetPosition, 50).then((success) => {
+                    callback(null);
+                });
+            }
+        });
         accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios");
         this.accessories.push(accessory);
     }

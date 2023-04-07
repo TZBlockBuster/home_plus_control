@@ -304,6 +304,15 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                 });
             });
 
+        accessory.getService(hap.Service.WindowCovering)!.getCharacteristic(hap.Characteristic.HoldPosition)
+            .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+                if (value) {
+                    this.setState(accessory, RequestCharacteristic.TargetPosition, 50).then((success) => {
+                        callback(null);
+                    })
+                }
+            });
+
 
         accessory.getService(hap.Service.AccessoryInformation)!.setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios")
 
