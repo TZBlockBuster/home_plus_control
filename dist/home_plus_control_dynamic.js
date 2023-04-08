@@ -1,4 +1,8 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+const http_1 = __importDefault(require("http"));
 const PLATFORM_NAME = "homebridge-home_plus_control";
 const PLUGIN_NAME = "homebridge-home_plus_control";
 let hap;
@@ -14,6 +18,7 @@ class HomePlusControlPlatform {
         // probably parse config or something here
         this.home_id = config["home_id"];
         this.thermo_home_id = config["thermo_home_id"];
+        this.createWebhook();
         log.info("Home + Control finished initializing!");
         api.on("didFinishLaunching" /* APIEvent.DID_FINISH_LAUNCHING */, () => {
             log.info("Home + Control 'didFinishLaunching'");
@@ -81,6 +86,31 @@ class HomePlusControlPlatform {
                 }
             });
         });
+    }
+    createWebhook() {
+        this.webhook = http_1.default.createServer(this.handleRequest.bind(this));
+        this.webhook.listen(18499, () => {
+            this.log.info("Webhook listening on port 18499");
+        });
+    }
+    handleRequest(request, response) {
+        var _a;
+        if ((_a = request.url) === null || _a === void 0 ? void 0 : _a.startsWith("/updateValue")) {
+            const url = new URL(request.url, "http://localhost:18499");
+            const deviceID = url.searchParams.get("deviceID");
+            const valueNamespace = url.searchParams.get("valueNamespace");
+            const value = url.searchParams.get("value");
+            let dev = this.accessories.find(value1 => { return value1.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.SerialNumber).value == deviceID; });
+            if (dev.category == 14 /* Categories.WINDOW_COVERING */) {
+                switch (valueNamespace) {
+                    case "current_position":
+                        dev.getService(hap.Service.WindowCovering).getCharacteristic(hap.Characteristic.CurrentPosition).updateValue(parseInt(value));
+                        break;
+                    default:
+                        this.log("Unknown Webhook value");
+                }
+            }
+        }
     }
     configureAccessory(accessory) {
         this.log.info("Home + Control configureAccessory", accessory.displayName);

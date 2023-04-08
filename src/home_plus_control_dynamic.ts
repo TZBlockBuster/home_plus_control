@@ -1,4 +1,5 @@
-import {API, APIEvent, Characteristic, CharacteristicEventTypes, CharacteristicGetCallback, CharacteristicSetCallback, CharacteristicValue, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformAccessoryEvent, PlatformConfig, Service} from "homebridge";
+import {API, APIEvent, Categories, CharacteristicEventTypes, CharacteristicGetCallback, CharacteristicSetCallback, CharacteristicValue, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformAccessoryEvent, PlatformConfig} from "homebridge";
+import http, {IncomingMessage, Server, ServerResponse} from "http";
 
 
 const PLATFORM_NAME = "homebridge-home_plus_control";
@@ -27,6 +28,8 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
     private readonly alreadyRegistered: string[] = [];
 
+    private webhook?: Server;
+
     constructor(log: Logging, config: PlatformConfig, api: API) {
         this.log = log;
         this.api = api;
@@ -35,6 +38,8 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
         this.home_id = config["home_id"];
         this.thermo_home_id = config["thermo_home_id"];
+        
+        this.createWebhook();
 
         log.info("Home + Control finished initializing!");
 
@@ -106,6 +111,32 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                 }
             })
         });
+    }
+
+    createWebhook() {
+        this.webhook = http.createServer(this.handleRequest.bind(this));
+        this.webhook.listen(18499, () => {
+            this.log.info("Webhook listening on port 18499");
+        });
+    }
+
+    handleRequest(request: IncomingMessage, response: ServerResponse) {
+        if(request.url?.startsWith("/updateValue")) {
+            const url = new URL(request.url, "http://localhost:18499");
+            const deviceID = url.searchParams.get("deviceID");
+            const valueNamespace = url.searchParams.get("valueNamespace");
+            const value = url.searchParams.get("value");
+            let dev = this.accessories.find(value1 => { return value1.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber).value == deviceID; })!;
+            if(dev.category == Categories.WINDOW_COVERING) {
+                switch (valueNamespace) {
+                    case "current_position":
+                        dev.getService(hap.Service.WindowCovering)!.getCharacteristic(hap.Characteristic.CurrentPosition).updateValue(parseInt(value!));
+                        break;
+                    default:
+                        this.log("Unknown Webhook value");
+                }
+            }
+        }
     }
 
     configureAccessory(accessory: PlatformAccessory) {
