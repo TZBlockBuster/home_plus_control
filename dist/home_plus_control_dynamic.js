@@ -27,7 +27,7 @@ class HomePlusControlPlatform {
                             accessory.getService(hap.Service.AccessoryInformation)
                                 .setCharacteristic(hap.Characteristic.SerialNumber, device["id"])
                                 .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"])
-                                .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "com.BlockWare-Studios.CasaPetite-67");
+                                .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "1662158258");
                             accessory.addService(hap.Service.Lightbulb, device["name"])
                                 .setPrimaryService(true);
                             this.configureAccessory(accessory);
@@ -38,7 +38,7 @@ class HomePlusControlPlatform {
                             accessory.getService(hap.Service.AccessoryInformation)
                                 .setCharacteristic(hap.Characteristic.SerialNumber, device["id"])
                                 .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"])
-                                .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "com.BlockWare-Studios.CasaPetite-67");
+                                .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "1662158258");
                             accessory.addService(hap.Service.Switch, device["name"]);
                             this.configureAccessory(accessory);
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -48,7 +48,7 @@ class HomePlusControlPlatform {
                             accessory.getService(hap.Service.AccessoryInformation)
                                 .setCharacteristic(hap.Characteristic.SerialNumber, device["id"])
                                 .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"])
-                                .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "com.BlockWare-Studios.CasaPetite-67");
+                                .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "1662158258");
                             accessory.addService(hap.Service.WindowCovering, device["name"]);
                             this.configureAccessory(accessory);
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -69,7 +69,7 @@ class HomePlusControlPlatform {
                             accessory.getService(hap.Service.AccessoryInformation)
                                 .setCharacteristic(hap.Characteristic.SerialNumber, device["id"])
                                 .setCharacteristic(hap.Characteristic.Model, "Netatmo " + device["type"])
-                                .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "com.BlockWare-Studios.CasaPetite-67");
+                                .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "1662158258");
                             accessory.addService(hap.Service.Thermostat, device["name"]);
                             this.configureAccessory(accessory);
                             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -87,7 +87,7 @@ class HomePlusControlPlatform {
         let serialNumber = accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.SerialNumber).value;
         let model = accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.Model).value;
         accessory.getService(hap.Service.AccessoryInformation)
-            .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "com.BlockWare-Studios.CasaPetite-67");
+            .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "1662158258");
         if (model == "Netatmo BNS") {
             if (!accessory.displayName.startsWith("Therm ")) {
                 accessory.getService(hap.Service.AccessoryInformation)
