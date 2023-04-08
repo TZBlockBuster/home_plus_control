@@ -117,6 +117,13 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
         accessory.getService(hap.Service.AccessoryInformation)!
             .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "com.BlockWare-Studios.CasaPetite-67");
 
+        if (model == "Netatmo BNS") {
+            if (!accessory.displayName.startsWith("Therm ")) {
+                accessory.getService(hap.Service.AccessoryInformation)!
+                    .setCharacteristic(hap.Characteristic.Name, "Therm " + accessory.displayName);
+            }
+        }
+
 
         if (this.alreadyRegistered.find(id => id == serialNumber) == undefined) {
             if (typeof serialNumber === "string") {
@@ -326,6 +333,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     }
 
     configureThermostat(accessory: PlatformAccessory) {
+
         accessory.getService(hap.Service.Thermostat)!.getCharacteristic(hap.Characteristic.CurrentHeatingCoolingState)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 this.requestState(accessory, RequestCharacteristic.CurrentHeatingCoolingState, this.thermo_home_id).then((value) => {

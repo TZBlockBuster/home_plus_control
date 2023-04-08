@@ -88,6 +88,12 @@ class HomePlusControlPlatform {
         let model = accessory.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.Model).value;
         accessory.getService(hap.Service.AccessoryInformation)
             .setCharacteristic(hap.Characteristic.AppMatchingIdentifier, "com.BlockWare-Studios.CasaPetite-67");
+        if (model == "Netatmo BNS") {
+            if (!accessory.displayName.startsWith("Therm ")) {
+                accessory.getService(hap.Service.AccessoryInformation)
+                    .setCharacteristic(hap.Characteristic.Name, "Therm " + accessory.displayName);
+            }
+        }
         if (this.alreadyRegistered.find(id => id == serialNumber) == undefined) {
             if (typeof serialNumber === "string") {
                 switch (model) {
