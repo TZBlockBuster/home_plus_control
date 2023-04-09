@@ -94,13 +94,15 @@ class HomePlusControlPlatform {
         });
     }
     handleRequest(request, response) {
-        var _a;
+        var _a, _b;
         if ((_a = request.url) === null || _a === void 0 ? void 0 : _a.startsWith("/updateValue")) {
             const url = new URL(request.url, "http://localhost:18499");
             const deviceID = url.searchParams.get("deviceID");
             const valueNamespace = url.searchParams.get("valueNamespace");
             const value = url.searchParams.get("value");
-            let dev = this.accessories.find(value1 => { return value1.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.SerialNumber).value == deviceID; });
+            let dev = this.accessories.find(value1 => {
+                return value1.getService(hap.Service.AccessoryInformation).getCharacteristic(hap.Characteristic.SerialNumber).value == deviceID;
+            });
             if (dev.category == 14 /* Categories.WINDOW_COVERING */) {
                 switch (valueNamespace) {
                     case "current_position":
@@ -110,6 +112,15 @@ class HomePlusControlPlatform {
                         this.log("Unknown Webhook value");
                 }
             }
+            response.writeHead(200, { "Content-Type": "text/plain" });
+            response.end("OK");
+        }
+        else if ((_b = request.url) === null || _b === void 0 ? void 0 : _b.startsWith("/forceRefresh")) {
+            for (const accessory of this.accessories) {
+                this.refreshAccessory(accessory);
+            }
+            response.writeHead(200, { "Content-Type": "text/plain" });
+            response.end("OK");
         }
     }
     configureAccessory(accessory) {
@@ -393,6 +404,48 @@ class HomePlusControlPlatform {
         });
         accessory.getService(hap.Service.AccessoryInformation).setCharacteristic(hap.Characteristic.Manufacturer, "BlockWare Studios");
         this.accessories.push(accessory);
+    }
+    refreshAccessory(accessory) {
+        switch (accessory.category) {
+            case 8 /* Categories.SWITCH */:
+                this.requestState(accessory, RequestCharacteristic.On).then((value) => {
+                    accessory.getService(hap.Service.Switch).getCharacteristic(hap.Characteristic.On).updateValue(value);
+                });
+                break;
+            case 5 /* Categories.LIGHTBULB */:
+                this.requestState(accessory, RequestCharacteristic.On).then((value) => {
+                    accessory.getService(hap.Service.Lightbulb).getCharacteristic(hap.Characteristic.On).updateValue(value);
+                });
+                this.requestState(accessory, RequestCharacteristic.Brightness).then((value) => {
+                    accessory.getService(hap.Service.Lightbulb).getCharacteristic(hap.Characteristic.Brightness).updateValue(value);
+                });
+                break;
+            case 14 /* Categories.WINDOW_COVERING */:
+                this.requestState(accessory, RequestCharacteristic.CurrentPosition).then((value) => {
+                    accessory.getService(hap.Service.WindowCovering).getCharacteristic(hap.Characteristic.CurrentPosition).updateValue(value);
+                });
+                this.requestState(accessory, RequestCharacteristic.PositionState).then((value) => {
+                    accessory.getService(hap.Service.WindowCovering).getCharacteristic(hap.Characteristic.PositionState).updateValue(value);
+                });
+                this.requestState(accessory, RequestCharacteristic.TargetPosition).then((value) => {
+                    accessory.getService(hap.Service.WindowCovering).getCharacteristic(hap.Characteristic.TargetPosition).updateValue(value);
+                });
+                break;
+            case 9 /* Categories.THERMOSTAT */:
+                this.requestState(accessory, RequestCharacteristic.CurrentHeatingCoolingState, this.thermo_home_id).then((value) => {
+                    accessory.getService(hap.Service.Thermostat).getCharacteristic(hap.Characteristic.CurrentHeatingCoolingState).updateValue(value);
+                });
+                this.requestState(accessory, RequestCharacteristic.CurrentTemperature, this.thermo_home_id).then((value) => {
+                    accessory.getService(hap.Service.Thermostat).getCharacteristic(hap.Characteristic.CurrentTemperature).updateValue(value);
+                });
+                this.requestState(accessory, RequestCharacteristic.TargetTemperature, this.thermo_home_id).then((value) => {
+                    accessory.getService(hap.Service.Thermostat).getCharacteristic(hap.Characteristic.TargetTemperature).updateValue(value);
+                });
+                this.requestState(accessory, RequestCharacteristic.CurrentRelativeHumidity, this.thermo_home_id).then((value) => {
+                    accessory.getService(hap.Service.Thermostat).getCharacteristic(hap.Characteristic.CurrentRelativeHumidity).updateValue(value);
+                });
+                break;
+        }
     }
 }
 var RequestCharacteristic;

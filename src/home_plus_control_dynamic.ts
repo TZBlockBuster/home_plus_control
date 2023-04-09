@@ -1,4 +1,18 @@
-import {API, APIEvent, Categories, CharacteristicEventTypes, CharacteristicGetCallback, CharacteristicSetCallback, CharacteristicValue, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformAccessoryEvent, PlatformConfig} from "homebridge";
+import {
+    API,
+    APIEvent,
+    Categories,
+    CharacteristicEventTypes,
+    CharacteristicGetCallback,
+    CharacteristicSetCallback,
+    CharacteristicValue,
+    DynamicPlatformPlugin,
+    HAP,
+    Logging,
+    PlatformAccessory,
+    PlatformAccessoryEvent,
+    PlatformConfig
+} from "homebridge";
 import http, {IncomingMessage, Server, ServerResponse} from "http";
 
 
@@ -38,7 +52,7 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
 
         this.home_id = config["home_id"];
         this.thermo_home_id = config["thermo_home_id"];
-        
+
         this.createWebhook();
 
         log.info("Home + Control finished initializing!");
@@ -121,13 +135,15 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     }
 
     handleRequest(request: IncomingMessage, response: ServerResponse) {
-        if(request.url?.startsWith("/updateValue")) {
+        if (request.url?.startsWith("/updateValue")) {
             const url = new URL(request.url, "http://localhost:18499");
             const deviceID = url.searchParams.get("deviceID");
             const valueNamespace = url.searchParams.get("valueNamespace");
             const value = url.searchParams.get("value");
-            let dev = this.accessories.find(value1 => { return value1.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber).value == deviceID; })!;
-            if(dev.category == Categories.WINDOW_COVERING) {
+            let dev = this.accessories.find(value1 => {
+                return value1.getService(hap.Service.AccessoryInformation)!.getCharacteristic(hap.Characteristic.SerialNumber).value == deviceID;
+            })!;
+            if (dev.category == Categories.WINDOW_COVERING) {
                 switch (valueNamespace) {
                     case "current_position":
                         dev.getService(hap.Service.WindowCovering)!.getCharacteristic(hap.Characteristic.CurrentPosition).updateValue(parseInt(value!));
@@ -136,6 +152,14 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
                         this.log("Unknown Webhook value");
                 }
             }
+            response.writeHead(200, {"Content-Type": "text/plain"});
+            response.end("OK");
+        } else if (request.url?.startsWith("/forceRefresh")) {
+            for (const accessory of this.accessories) {
+                this.refreshAccessory(accessory);
+            }
+            response.writeHead(200, {"Content-Type": "text/plain"});
+            response.end("OK");
         }
     }
 
@@ -455,6 +479,48 @@ class HomePlusControlPlatform implements DynamicPlatformPlugin {
     }
 
 
+    private refreshAccessory(accessory: PlatformAccessory) {
+        switch (accessory.category) {
+            case Categories.SWITCH:
+                this.requestState(accessory, RequestCharacteristic.On).then((value) => {
+                    accessory.getService(hap.Service.Switch)!.getCharacteristic(hap.Characteristic.On)!.updateValue(value);
+                });
+                break;
+            case Categories.LIGHTBULB:
+                this.requestState(accessory, RequestCharacteristic.On).then((value) => {
+                    accessory.getService(hap.Service.Lightbulb)!.getCharacteristic(hap.Characteristic.On)!.updateValue(value);
+                });
+                this.requestState(accessory, RequestCharacteristic.Brightness).then((value) => {
+                    accessory.getService(hap.Service.Lightbulb)!.getCharacteristic(hap.Characteristic.Brightness)!.updateValue(value);
+                });
+                break;
+            case Categories.WINDOW_COVERING:
+                this.requestState(accessory, RequestCharacteristic.CurrentPosition).then((value) => {
+                    accessory.getService(hap.Service.WindowCovering)!.getCharacteristic(hap.Characteristic.CurrentPosition)!.updateValue(value);
+                });
+                this.requestState(accessory, RequestCharacteristic.PositionState).then((value) => {
+                    accessory.getService(hap.Service.WindowCovering)!.getCharacteristic(hap.Characteristic.PositionState)!.updateValue(value);
+                });
+                this.requestState(accessory, RequestCharacteristic.TargetPosition).then((value) => {
+                    accessory.getService(hap.Service.WindowCovering)!.getCharacteristic(hap.Characteristic.TargetPosition)!.updateValue(value);
+                });
+                break;
+            case Categories.THERMOSTAT:
+                this.requestState(accessory, RequestCharacteristic.CurrentHeatingCoolingState, this.thermo_home_id).then((value) => {
+                    accessory.getService(hap.Service.Thermostat)!.getCharacteristic(hap.Characteristic.CurrentHeatingCoolingState)!.updateValue(value);
+                });
+                this.requestState(accessory, RequestCharacteristic.CurrentTemperature, this.thermo_home_id).then((value) => {
+                    accessory.getService(hap.Service.Thermostat)!.getCharacteristic(hap.Characteristic.CurrentTemperature)!.updateValue(value);
+                });
+                this.requestState(accessory, RequestCharacteristic.TargetTemperature, this.thermo_home_id).then((value) => {
+                    accessory.getService(hap.Service.Thermostat)!.getCharacteristic(hap.Characteristic.TargetTemperature)!.updateValue(value);
+                });
+                this.requestState(accessory, RequestCharacteristic.CurrentRelativeHumidity, this.thermo_home_id).then((value) => {
+                    accessory.getService(hap.Service.Thermostat)!.getCharacteristic(hap.Characteristic.CurrentRelativeHumidity)!.updateValue(value);
+                });
+                break;
+        }
+    }
 }
 
 enum RequestCharacteristic {
